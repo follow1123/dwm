@@ -48,6 +48,12 @@ static const Layout layouts[] = {
 	{ "",      monocle },
 };
 
+/*自定义变量*/
+
+static const int newclientathead    = 0;         /* 定义新窗口在栈顶还是栈底 */
+
+
+
 /* key definitions */
 #define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
