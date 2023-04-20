@@ -4,7 +4,7 @@
 static const unsigned int borderpx  = 1;        /* border pixel of windows 窗口边框宽度*/
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar 是否显示状态栏*/
-static const int topbar             = 1;        /* 0 means bottom bar 状态栏显示怎么顶部还是底部*/
+static const int topbar             = 0;        /* 0 means bottom bar 状态栏显示怎么顶部还是底部*/
 static const Bool viewontag         = True;     /* Switch view on tag switch 窗口是否根据应用显示*/
 static const char *fonts[]          = { 
 	"monospace:size=14",
@@ -71,14 +71,14 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
-// static const char *volup[]  = { "/home/yf/scripts/volm.sh", "0" };
-// static const char *voldown[]  = { "/home/yf/sldm/scripts/volm.sh", "1" };
-// static const char *voltoogle[]  = { "/home/yf/sldm/scripts/volm.sh", "2" };
+static const char *volup[]  = { "/home/yf/scripts/volm.sh", "0" };
+static const char *voldown[]  = { "/home/yf/sldm/scripts/volm.sh", "1" };
+static const char *voltoogle[]  = { "/home/yf/sldm/scripts/volm.sh", "2" };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_p,      spawn,          {.v = dmenucmd } },
-	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = termcmd } },
+	{ MODKEY,                       XK_r,      spawn,          {.v = dmenucmd } },
+	{ MODKEY,             			XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
 	{ MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
@@ -88,9 +88,9 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
-	{ MODKEY,                       XK_Return, zoom,           {0} },
+	{ MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
-	{ MODKEY|ShiftMask,             XK_c,      killclient,     {0} },
+	{ MODKEY,             			XK_q,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
 	{ MODKEY,                       XK_m,      setlayout,      {.v = &layouts[2]} },
@@ -112,6 +112,11 @@ static const Key keys[] = {
 	TAGKEYS(                        XK_8,                      7)
 	TAGKEYS(                        XK_9,                      8)
 	{ MODKEY|ShiftMask,             XK_q,      quit,           {0} },
+
+	/* 自定义快捷键 */
+	{ MODKEY,       	      		XK_F3,      spawn,           {.v = volup } },
+	{ MODKEY,             			XK_F2,      spawn,           {.v = voldown } },
+	{ MODKEY,             			XK_F4,      spawn,           {.v = voltoogle } },
 };
 
 /* button definitions */
@@ -131,10 +136,5 @@ static const Button buttons[] = {
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
-
-		/* 自定义快捷键 */
-	{ MODKEY,       	      		XK_F3,      spawn,           { .v = volup } },
-	{ MODKEY,             			XK_F2,      spawn,           { .v = voldown } },
-	{ MODKEY,             			XK_F4,      spawn,           { .v = voltoogle } },
 };
 
