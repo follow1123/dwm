@@ -1,18 +1,21 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 1;        /* border pixel of windows */
+static const unsigned int borderpx  = 1;        /* border pixel of windows 窗口边框宽度*/
 static const unsigned int snap      = 32;       /* snap pixel */
-static const int showbar            = 1;        /* 0 means no bar */
-static const int topbar             = 1;        /* 0 means bottom bar */
-static const Bool viewontag         = True;     /* Switch view on tag switch */
-static const char *fonts[]          = { "monospace:size=10" };
-static const char dmenufont[]       = "monospace:size=10";
-static const char col_gray1[]       = "#222222";
+static const int showbar            = 1;        /* 0 means no bar 是否显示状态栏*/
+static const int topbar             = 1;        /* 0 means bottom bar 状态栏显示怎么顶部还是底部*/
+static const Bool viewontag         = True;     /* Switch view on tag switch 窗口是否根据应用显示*/
+static const char *fonts[]          = { 
+	"monospace:size=14",
+	"Symbols Nerd Font:pixelsize=20:type=2048-em:entialias=true:autohint=true"
+};
+static const char dmenufont[]       = "monospace:size=14";
+static const char col_gray1[]       = "#101010";
 static const char col_gray2[]       = "#444444";
 static const char col_gray3[]       = "#bbbbbb";
 static const char col_gray4[]       = "#eeeeee";
-static const char col_cyan[]        = "#005577";
+static const char col_cyan[]        = "#474747";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
@@ -20,7 +23,7 @@ static const char *colors[][3]      = {
 };
 
 /* tagging */
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = { "", "", "", "", "", "", "", "", "" };
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -40,13 +43,13 @@ static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen win
 
 static const Layout layouts[] = {
 	/* symbol     arrange function */
-	{ "[]=",      tile },    /* first entry is default */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",      monocle },
+	{ "",      tile },    /* first entry is default */
+	{ "",      NULL },    /* no layout function means floating behavior */
+	{ "",      monocle },
 };
 
 /* key definitions */
-#define MODKEY Mod1Mask
+#define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODKEY,                       KEY,      view,           {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask,           KEY,      toggleview,     {.ui = 1 << TAG} }, \
@@ -62,6 +65,9 @@ static const Layout layouts[] = {
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
 static const char *termcmd[]  = { "st", NULL };
+// static const char *volup[]  = { "/home/yf/scripts/volm.sh", "0" };
+// static const char *voldown[]  = { "/home/yf/sldm/scripts/volm.sh", "1" };
+// static const char *voltoogle[]  = { "/home/yf/sldm/scripts/volm.sh", "2" };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -119,5 +125,10 @@ static const Button buttons[] = {
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+
+		/* 自定义快捷键 */
+	{ MODKEY,       	      		XK_F3,      spawn,           { .v = volup } },
+	{ MODKEY,             			XK_F2,      spawn,           { .v = voldown } },
+	{ MODKEY,             			XK_F4,      spawn,           { .v = voltoogle } },
 };
 
