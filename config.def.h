@@ -8,7 +8,8 @@ static const int topbar             = 0;        /* 0 means bottom bar 状态栏�
 static const Bool viewontag         = True;     /* Switch view on tag switch 窗口是否根据应用显示*/
 static const char *fonts[]          = { 
 	"monospace:size=14",
-	"Symbols Nerd Font:pixelsize=20:type=2048-em:entialias=true:autohint=true"
+	"WenQuanYi Micro Hei Mono:type=Regular:size=14",
+	"Symbols Nerd Font:pixelsize=20:type=2048-em:entialias=true:autohint=true" 
 };
 static const char dmenufont[]       = "monospace:size=14";
 static const char col_gray1[]       = "#101010";
