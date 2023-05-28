@@ -509,7 +509,8 @@ buttonpress(XEvent *e)
 		/* 2px right padding */
 		else if (ev->x > selmon->ww - TEXTW(stext) + lrpad - 2)
 			click = ClkStatusText;
-		else {
+		// tab大于10个或者点击时所有tab的宽度和小于x轴则触发tab对应点击事件
+		else if (m->bt >= 10 || x + TEXTW(selmon->ltsymbol) + m->bt * (m->btw / 10) > ev->x){
 			x += TEXTW(selmon->ltsymbol);
 			c = m->clients;
 
@@ -517,8 +518,14 @@ buttonpress(XEvent *e)
 				do {
 					if (!ISVISIBLE(c))
 						continue;
-					else
-						x +=(1.0 / (double)m->bt) * m->btw;
+					else{
+						// 计算tab可点击区域宽度
+						int tabw = m->btw / 10;
+						if(m->bt > 10){
+							tabw = (1.0 / (double)m->bt) * m->btw;
+						}
+						x += tabw;
+					}
 				} while (ev->x > x && (c = c->next));
 
 				click = ClkWinTitle;
@@ -848,7 +855,12 @@ drawbar(Monitor *m)
 	if ((w = m->ww - tw - x) > bh) {
 		if (n > 0) {
 			int remainder = w % n;
-			int tabw = (1.0 / (double)n) * w + 1;
+			// 打开应用默认状态栏显示宽度为状态栏的10分之1,当打开的应用大于10个是则按原来方式
+			int defalut_width = 10;
+			int tabw = w / defalut_width;
+			if (n > defalut_width){
+				tabw = (1.0 / (double)n) * w + 1;
+			}
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c))
 					continue;
