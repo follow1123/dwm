@@ -861,6 +861,7 @@ drawbar(Monitor *m)
 			if (n > defalut_width){
 				tabw = (1.0 / (double)n) * w + 1;
 			}
+			int avaiable_width = w;
 			for (c = m->clients; c; c = c->next) {
 				if (!ISVISIBLE(c))
 					continue;
@@ -880,6 +881,12 @@ drawbar(Monitor *m)
 				}
 				drw_text(drw, x, 0, tabw, bh, lrpad / 2, c->name, 0);
 				x += tabw;
+				avaiable_width -= tabw;
+			}
+			// 多余部分绘制空白，防止退出应用后图标仍然在
+			if(avaiable_width){
+				drw_setscheme(drw, scheme[SchemeNorm]);
+				drw_text(drw, x, 0, avaiable_width, bh, lrpad / 2, "", 0);
 			}
 		} else {
 			drw_setscheme(drw, scheme[SchemeNorm]);
