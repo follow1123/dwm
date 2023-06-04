@@ -17,11 +17,17 @@ static const char col_gray2[]       = "#272727";
 static const char col_gray3[]       = "#ffffff";
 static const char col_gray4[]       = "#ffffff";
 static const char col_cyan[]        = "#272727";
+static const char col_1[]        = "#00b7c3";
+static const char col_2[]        = "#DC143C";
+static const char col_3[]        = "#00FF7F";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
 	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
 	[SchemeHid]  = { col_cyan,  col_gray1, col_cyan  },
+	[SchemeUnderline]  = { col_1, col_gray1, col_cyan },
+	[SchemeDebian] = { col_2, col_gray1, col_gray2 },
+	[SchemeWeek] = { col_3, col_gray1, col_gray2 },
 };
 
 /* tagging */

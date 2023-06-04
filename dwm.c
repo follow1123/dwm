@@ -60,7 +60,15 @@
 
 /* enums */
 enum { CurNormal, CurResize, CurMove, CurLast }; /* cursor */
-enum { SchemeNorm, SchemeSel, SchemeHid }; /* color schemes */
+/* color schemes */
+enum {
+	SchemeNorm,
+	SchemeSel,
+	SchemeHid,
+	SchemeUnderline,
+	SchemeDebian,
+	SchemeWeek,
+};
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType,
        NetWMWindowTypeDialog, NetClientList, NetLast }; /* EWMH atoms */
@@ -800,7 +808,7 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, w, tw = 0, n = 0, scm;
+	int x, w, tw = 0, n = 0, scm, status_index;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, occ = 0, urg = 0;
@@ -815,15 +823,24 @@ drawbar(Monitor *m)
 		drw_setscheme(drw, scheme[SchemeNorm]);
 
 		x = 0;
+		status_index = 0;
 		for (text = s = stext; *s; s++) {
 			if ((unsigned char)(*s) < ' ') {
 				ch = *s;
 				*s = '\0';
 				tw = TEXTW(text) - lrpad;
+				if(status_index == 1){
+					drw_setscheme(drw, scheme[SchemeDebian]);
+				} else if(status_index == 5){
+					drw_setscheme(drw, scheme[SchemeWeek]);
+				} else{
+					drw_setscheme(drw, scheme[SchemeNorm]);
+				}
 				drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, text, 0);
 				x += tw;
 				*s = ch;
 				text = s + 1;
+				status_index++;
 			}
 		}
 		tw = TEXTW(text) - lrpad + 2;
@@ -844,8 +861,11 @@ drawbar(Monitor *m)
 		if(!(occ & 1 << i || m->tagset[m->seltags] & 1 << i))
 			continue;
 		w = TEXTW(tags[i]);
-		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+		drw_setscheme(drw, scheme[m->tagset[m->seltags] & 1 << i ? SchemeUnderline : SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
+		if(m->tagset[m->seltags] & 1 << i){
+			drw_rect(drw, x, bh - 2, w, 2, 1, 0);
+		}
 		x += w;
 	}
 	w = TEXTW(m->ltsymbol);
@@ -866,7 +886,8 @@ drawbar(Monitor *m)
 				if (!ISVISIBLE(c))
 					continue;
 				if (m->sel == c)
-					scm = SchemeSel;
+					// scm = SchemeSel;
+					scm = SchemeUnderline;
 				else if (HIDDEN(c))
 					scm = SchemeHid;
 				else
@@ -880,6 +901,9 @@ drawbar(Monitor *m)
 					remainder--;
 				}
 				drw_text(drw, x, 0, tabw, bh, lrpad / 2, c->name, 0);
+				if (m->sel == c){
+					drw_rect(drw, x, bh - 2, tabw, 2, 1, 0);
+				}
 				x += tabw;
 				avaiable_width -= tabw;
 			}
