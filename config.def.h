@@ -1,37 +1,41 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static const unsigned int borderpx  = 2;        /* border pixel of windows 窗口边框宽度*/
+static const unsigned int borderpx  = 1;        /* border pixel of windows 窗口边框宽度*/
 static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar 是否显示状态栏*/
 static const int topbar             = 0;        /* 0 means bottom bar 状态栏显示怎么顶部还是底部*/
 static const Bool viewontag         = True;     /* Switch view on tag switch 窗口是否根据应用显示*/
 static const char *fonts[]          = { 
-	"monospace:size=14",
-	"WenQuanYi Micro Hei Mono:type=Regular:size=14",
-	"Symbols Nerd Font:pixelsize=20:type=2048-em:entialias=true:autohint=true" 
+	"JetBrains Mono:size=10:type=Regular:entialias=true:autohint=true", /* 英文字体 */
+	"WenQuanYi Micro Hei Mono:type=Regular:size=10:entialias=true:autohint=true", /* 中文字体 */
+	"Symbols Nerd Font Mono:pixelsize=18:type=2048-em:entialias=true:autohint=true", /* 符号字体 */
 };
 static const char dmenufont[]       = "monospace:size=14";
-static const char col_gray1[]       = "#101010";
-static const char col_gray2[]       = "#272727";
-static const char col_gray3[]       = "#ffffff";
-static const char col_gray4[]       = "#ffffff";
-static const char col_cyan[]        = "#272727";
-static const char col_1[]        = "#00b7c3";
-static const char col_2[]        = "#DC143C";
-static const char col_3[]        = "#00FF7F";
+
+// static const char col_bg1[]       = "#101010";
+static const char col_bg1[]       = "#1c1c1c";
+static const char col_bg2[]       = "#272727";
+static const char col_fg[]       = "#ffffff";
+static const char col_primary[]        = "#00b7c3";
+// static const char col_primary[]        = "#308280";
+static const char col_debian[]        = "#A80030";
+static const char col_normal[]        = "#3FA63B";
+static const char col_warn[]        = "#BE9B00";
+static const char col_error[]        = "#DC143C";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
-	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
-	[SchemeHid]  = { col_cyan,  col_gray1, col_cyan  },
-	[SchemeUnderline]  = { col_1, col_gray1, col_cyan },
-	[SchemeDebian] = { col_2, col_gray1, col_gray2 },
-	[SchemeWeek] = { col_3, col_gray1, col_gray2 },
+	[SchemeNorm] = { col_fg, col_bg1, col_bg1 },
+	[SchemeSel]  = { col_fg, col_bg2,  col_bg2 },
+	[SchemeHid]  = { col_bg2,  col_bg1, col_bg2  },
+	[SchemeUnderline]  = { col_primary, col_bg1, col_bg2 },
+	[SchemeDebian] = { col_debian, col_bg1, col_bg2 },
+	[SchemeWarn] = { col_warn, col_bg1, col_bg2 },
+	[SchemeError] = { col_error, col_bg1, col_bg2 },
 };
 
-/* tagging */
-static const char *tags[] = { "", "", "", "", "", "", "", "", "" };
+/* tagging 󰎤 󰎧 󰎪 󰎭 󰎱 󰎳 󰎶 󰎹 󰎼 */
+static const char *tags[] = { "󰎤", "󰎧", "󰎪", "󰎭", "󰎱", "󰎳", "󰎶", "󰎹", "󰎼" };
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -60,8 +64,6 @@ static const Layout layouts[] = {
 
 static const int newclientathead    = 0;         /* 定义新窗口在栈顶还是栈底 */
 
-
-
 /* key definitions */
 #define MODKEY Mod4Mask
 #define TAGKEYS(KEY,TAG) \
@@ -78,16 +80,22 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_gray1, "-nf", col_gray3, "-sb", col_cyan, "-sf", col_gray4, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_fg, "-nf", col_fg, "-sb", col_fg, "-sf", col_fg, NULL };
+
+static const char *roficmd[] = { "rofi", "-show", "run", NULL };
+static const char *statusshowallcmd[] = { "bash", "/home/yf/space/scripts/dwmblocks/toggle_show_all.sh", NULL };
+static const char *nemocmd[] = { "nemo", NULL };
 static const char *terstmcmd[]  = { "st", NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
-static const char *volup[]  = { "/home/yf/scripts/volm.sh", "0" };
-static const char *voldown[]  = { "/home/yf/sldm/scripts/volm.sh", "1" };
-static const char *voltoogle[]  = { "/home/yf/sldm/scripts/volm.sh", "2" };
+static const char *volup[]  = { "/home/yf/space/scripts/volm.sh", "0" };
+static const char *voldown[]  = { "/home/yf/space/scripts/volm.sh", "1" };
+static const char *voltoogle[]  = { "/home/yf/space/scripts/volm.sh", "2" };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_r,      spawn,          {.v = dmenucmd } },
+	{ MODKEY,                       XK_r,      spawn,          {.v = roficmd } },
+	{ MODKEY,                       XK_a,      spawn,          {.v = statusshowallcmd } },
+	{ MODKEY,                       XK_e,      spawn,          {.v = nemocmd } },
 	{ MODKEY,             			XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY|ShiftMask,       		XK_Return, spawn,          {.v = terstmcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
@@ -119,7 +127,7 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_period, tagmon,         {.i = +1 } },
 	{ MODKEY,                       XK_s,      show,           {0} },
 	{ MODKEY|ShiftMask,             XK_s,      showall,        {0} },
-	{ MODKEY,                       XK_h,      hide,           {0} },
+	//{ MODKEY,                       XK_h,      hide,           {0} },
 	TAGKEYS(                        XK_1,                      0)
 	TAGKEYS(                        XK_2,                      1)
 	TAGKEYS(                        XK_3,                      2)
@@ -151,7 +159,8 @@ static const Button buttons[] = {
 	{ ClkStatusText,        0,              Button3,        sigstatusbar,   {.i = 3} },
 	{ ClkStatusText,        0,              Button4,        sigstatusbar,   {.i = 4} },
 	{ ClkStatusText,        0,              Button5,        sigstatusbar,   {.i = 5} },
-	{ ClkStatusText,        ShiftMask,      Button3,        sigstatusbar,   {.i = 6} },
+	{ ClkStatusText,        ControlMask,    Button1,        sigstatusbar,   {.i = 6} },
+	{ ClkStatusText,        ControlMask,    Button3,        sigstatusbar,   {.i = 7} },
 	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
 	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
 	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
