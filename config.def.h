@@ -7,9 +7,9 @@ static const int showbar            = 1;        /* 0 means no bar 是否显示�
 static const int topbar             = 0;        /* 0 means bottom bar 状态栏显示怎么顶部还是底部*/
 static const Bool viewontag         = True;     /* Switch view on tag switch 窗口是否根据应用显示*/
 static const char *fonts[]          = { 
-	"JetBrains Mono:size=10:type=Regular:entialias=true:autohint=true", /* 英文字体 */
-	"WenQuanYi Micro Hei Mono:type=Regular:size=10:entialias=true:autohint=true", /* 中文字体 */
-	"Symbols Nerd Font Mono:pixelsize=18:type=2048-em:entialias=true:autohint=true", /* 符号字体 */
+	"JetBrains Mono:size=12:type=Regular:entialias=true:autohint=true", /* 英文字体 */
+	"WenQuanYi Micro Hei Mono:type=Regular:size=12:entialias=true:autohint=true", /* 中文字体 */
+	"Symbols Nerd Font Mono:pixelsize=22:type=2048-em:entialias=true:autohint=true", /* 符号字体 */
 };
 static const char dmenufont[]       = "monospace:size=14";
 
@@ -77,19 +77,21 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 
 #define STATUSBAR "dwmblocks"
 
+#define SCRIPTS(name) "/home/yf/sde/scripts/"name
+
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_fg, "-nf", col_fg, "-sb", col_fg, "-sf", col_fg, NULL };
 
 static const char *roficmd[] = { "rofi", "-show", "run", NULL };
-static const char *statusshowallcmd[] = { "bash", "/home/yf/space/scripts/dwmblocks/toggle_show_all.sh", NULL };
+static const char *statusshowallcmd[] = { "bash", SCRIPTS("dwmblocks/toggle_show_all.sh"), NULL };
 static const char *nemocmd[] = { "nemo", NULL };
 static const char *terstmcmd[]  = { "st", NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
-static const char *volup[]  = { "/home/yf/space/scripts/volm.sh", "0" };
-static const char *voldown[]  = { "/home/yf/space/scripts/volm.sh", "1" };
-static const char *voltoogle[]  = { "/home/yf/space/scripts/volm.sh", "2" };
+// static const char *volup[]  = { "/home/yf/space/scripts/volm.sh", "0" };
+// static const char *voldown[]  = { "/home/yf/space/scripts/volm.sh", "1" };
+// static const char *voltoogle[]  = { "/home/yf/space/scripts/volm.sh", "2" };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -141,9 +143,9 @@ static const Key keys[] = {
 	{ MODKEY|ControlMask|ShiftMask, XK_q,      quit,           {1} }, 
 
 	/* 自定义快捷键 */
-	{ MODKEY,       	      		XK_F3,      spawn,           {.v = volup } },
-	{ MODKEY,             			XK_F2,      spawn,           {.v = voldown } },
-	{ MODKEY,             			XK_F4,      spawn,           {.v = voltoogle } },
+	// { MODKEY,       	      		XK_F3,      spawn,           {.v = volup } },
+	// { MODKEY,             			XK_F2,      spawn,           {.v = voldown } },
+	// { MODKEY,             			XK_F4,      spawn,           {.v = voltoogle } },
 };
 
 /* button definitions */
