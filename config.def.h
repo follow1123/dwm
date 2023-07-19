@@ -17,6 +17,7 @@ static const char dmenufont[]       = "monospace:size=14";
 static const char col_bg1[]       = "#1c1c1c";
 static const char col_bg2[]       = "#272727";
 static const char col_fg[]       = "#ffffff";
+static const char col_fg1[]       = "#B7B7B7";
 static const char col_primary[]        = "#00b7c3";
 // static const char col_primary[]        = "#308280";
 static const char col_debian[]        = "#A80030";
@@ -35,7 +36,7 @@ static const char *colors[][3]      = {
 };
 
 /* tagging 󰎤 󰎧 󰎪 󰎭 󰎱 󰎳 󰎶 󰎹 󰎼 */
-static const char *tags[] = { "󰎤", "󰎧", "󰎪", "󰎭", "󰎱", "󰎳", "󰎶", "󰎹", "󰎼" };
+static const char *tags[] = { "󰎤", "󰎧", "󰎪", "󰎭", "󰎱", "󰎳", "󰎶", "󰎹", "󰎼" }; // 工作区图标
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -44,6 +45,7 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Gimp",     NULL,       NULL,       0,            1,           -1 },
+	{ "Gpick",    NULL,       NULL,       0,            1,           -1 },
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
 };
 
@@ -99,12 +101,12 @@ static const char *termcmd[]  = { "alacritty", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_r,      spawn,          {.v = roficmd } },
-	{ MODKEY,                       XK_a,      spawn,          {.v = statusshowallcmd } },
-	{ MODKEY,                       XK_e,      spawn,          {.v = nemocmd } },
-	{ MODKEY,             			XK_Return, spawn,          {.v = termcmd } },
-	{ MODKEY|ShiftMask,       		XK_Return, spawn,          {.v = terstmcmd } },
-	{ MODKEY,                       XK_b,      togglebar,      {0} },
+	{ MODKEY,                       XK_r,      spawn,          {.v = roficmd } }, // Super+r rofi应用启动器
+	{ MODKEY,                       XK_a,      spawn,          {.v = statusshowallcmd } }, // Super+a 显示状态栏信息部分的所有信息
+	{ MODKEY,                       XK_e,      spawn,          {.v = nemocmd } }, // Spuer+e nemo文件管理器
+	{ MODKEY,             			XK_Return, spawn,          {.v = termcmd } }, // Super+enter alacrity终端
+	{ MODKEY|ShiftMask,       		XK_Return, spawn,          {.v = terstmcmd } }, // Super+Shift+enter st终端
+	{ MODKEY,                       XK_b,      togglebar,      {0} }, // Spuer+b 隐藏/显示状态栏
 	// { MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } },
 	// { MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
 	// { MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
@@ -119,7 +121,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
 	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
 	// { MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
-	{ MODKEY,                       XK_Tab,    view,           {0} },
+	{ Mod1Mask,                     XK_Tab,    view,           {0} }, // Alt+tab 切换工作区
 	{ MODKEY,             			XK_q,      killclient,     {0} },
 	{ MODKEY,                       XK_t,      setlayout,      {.v = &layouts[0]} },
 	{ MODKEY,                       XK_f,      setlayout,      {.v = &layouts[1]} },
@@ -159,27 +161,33 @@ static const Key keys[] = {
 	// { MODKEY,             			XK_F4,      spawn,           {.v = voltoogle } },
 };
 
+/*------------------------------------------------------------------------------状态栏点击事件----------------------------------------------------------------------------------------------*/
 /* button definitions */
 /* click can be ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
-	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} },
-	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} },
-	{ ClkWinTitle,          0,              Button1,        togglewin,      {0} },
-	{ ClkWinTitle,          0,              Button2,        zoom,           {0} },
-	{ ClkStatusText,        0,              Button1,        sigstatusbar,   {.i = 1} },
-	{ ClkStatusText,        0,              Button2,        sigstatusbar,   {.i = 2} },
-	{ ClkStatusText,        0,              Button3,        sigstatusbar,   {.i = 3} },
-	{ ClkStatusText,        0,              Button4,        sigstatusbar,   {.i = 4} },
-	{ ClkStatusText,        0,              Button5,        sigstatusbar,   {.i = 5} },
-	{ ClkStatusText,        ControlMask,    Button1,        sigstatusbar,   {.i = 6} },
-	{ ClkStatusText,        ControlMask,    Button3,        sigstatusbar,   {.i = 7} },
-	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },
-	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },
-	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },
-	{ ClkTagBar,            0,              Button1,        view,           {0} },
-	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
-	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
-	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
+	// 布局按钮点击事件
+	{ ClkLtSymbol,          0,              Button1,        setlayout,      {0} }, // 鼠标左键 切换布局
+	{ ClkLtSymbol,          0,              Button3,        setlayout,      {.v = &layouts[2]} }, // 鼠标右键 切换到第三个布局
+	// 点击窗口标题事件
+	{ ClkWinTitle,          0,              Button1,        togglewin,      {0} }, // 隐藏/显示窗口
+	{ ClkWinTitle,          0,              Button2,        zoom,           {0} }, //
+	// 状态栏鼠标事件
+	{ ClkStatusText,        0,              Button1,        sigstatusbar,   {.i = 1} },	// 鼠标左键
+	{ ClkStatusText,        0,              Button2,        sigstatusbar,   {.i = 2} }, // 鼠标中键
+	{ ClkStatusText,        0,              Button3,        sigstatusbar,   {.i = 3} }, // 鼠标右键
+	{ ClkStatusText,        0,              Button4,        sigstatusbar,   {.i = 4} }, // 鼠标滚轮向上
+	{ ClkStatusText,        0,              Button5,        sigstatusbar,   {.i = 5} }, // 鼠标滚轮向下
+	{ ClkStatusText,        ControlMask,    Button1,        sigstatusbar,   {.i = 6} }, // Ctrl+鼠标右键
+	{ ClkStatusText,        ControlMask,    Button3,        sigstatusbar,   {.i = 7} },	// Ctrl+鼠标左键
+	// 窗口鼠标事件
+	{ ClkClientWin,         MODKEY,         Button1,        movemouse,      {0} },	// Super+鼠标左键 移动窗口
+	{ ClkClientWin,         MODKEY,         Button2,        togglefloating, {0} },	// Super+鼠标中键 接换浮动窗口
+	{ ClkClientWin,         MODKEY,         Button3,        resizemouse,    {0} },	// Super+鼠标右键 设置窗口大小
+	// 工作区按钮点击事件
+	{ ClkTagBar,            0,              Button1,        view,           {0} }, // 鼠标左键 切换到对应的工作区
+	{ ClkTagBar,            0,              Button3,        toggleview,     {0} }, // 鼠标右键 同时显示点击的工作区和当前工作区
+	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} }, // Spuer+鼠标左键 将当前窗口移动到点击的工作区内
+	// { ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} }, // Super+鼠标右键 将当前窗口复制到点击的工作区内（没什么用）
 };
 
