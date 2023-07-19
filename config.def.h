@@ -12,6 +12,9 @@ static const char *fonts[]          = {
 	"Symbols Nerd Font Mono:pixelsize=22:type=2048-em:entialias=true:autohint=true", /* 符号字体 */
 };
 static const char dmenufont[]       = "monospace:size=14";
+// 状态栏透明补丁
+static unsigned int baralpha        = 0xd0; // 透明度16进制
+static unsigned int borderalpha     = OPAQUE;
 
 // static const char col_bg1[]       = "#101010";
 static const char col_bg1[]       = "#1c1c1c";
