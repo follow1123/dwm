@@ -1,4 +1,6 @@
 /* See LICENSE file for copyright and license details. */
+// 功能键依赖
+#include <X11/XF86keysym.h>
 
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows 窗口边框宽度*/
@@ -213,6 +215,20 @@ static const Key keys[] = {
 	// { MODKEY,       	      		XK_F3,      spawn,           {.v = volup } },
 	// { MODKEY,             			XK_F2,      spawn,           {.v = voldown } },
 	// { MODKEY,             			XK_F4,      spawn,           {.v = voltoogle } },
+	// 功能键配置
+
+	{ 0,                            XF86XK_AudioMute,         spawn, SHCMD(SCRIPTS("dwm/volume.sh mute")) },
+	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD(SCRIPTS("dwm/volume.sh inc")) },
+	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD(SCRIPTS("dwm/volume.sh dec")) },
+
+	{ 0,                            XF86XK_AudioPause,        spawn, SHCMD("playerctl pause") }, // 暂停
+	{ 0,                            XF86XK_AudioPrev,         spawn, SHCMD("playerctl previous") }, // 上一个
+	{ 0,                            XF86XK_AudioNext,         spawn, SHCMD("playerctl next") }, // 下一个
+	{ 0,                            XF86XK_AudioPlay,         spawn, SHCMD("playerctl play-pause") }, // 播放/暂停
+	{ 0,                            XF86XK_AudioStop,         spawn, SHCMD("playerctl stop") }, // 停止
+
+	// { 0,                            XF86XK_MonBrightnessUp,   spawn, SHCMD("light -A 5; notify-send -r 9123 -h int:value:`light` -h string:hlcolor:#dddddd 'Backlight' " ) },
+	// { 0,                            XF86XK_MonBrightnessDown, spawn, SHCMD("light -U 5; notify-send -r 9123 -h int:value:`light` -h string:hlcolor:#dddddd 'Backlight' " ) },
 };
 
 /*------------------------------------------------------------------------------状态栏点击事件----------------------------------------------------------------------------------------------*/
