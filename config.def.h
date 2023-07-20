@@ -104,7 +104,7 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 
 #define STATUSBAR "dwmblocks"
 
-#define SCRIPTS(name) "/home/yf/sde/scripts/"name
+#define SCRIPTS(name) "/home/yf/space/scripts/sde/"name
 
 // dwm重启后复原窗口位置临时文件
 #define SESSION_FILE "/tmp/dwm-session"
@@ -116,18 +116,17 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_fg, "-nf", col_fg, "-sb", col_fg, "-sf", col_fg, NULL };
 
 static const char *roficmd[] = { "rofi", "-show", "run", NULL };
-static const char *statusshowallcmd[] = { "bash", SCRIPTS("dwmblocks/toggle_show_all.sh"), NULL };
+static const char *statusshowallcmd[] = { "bash", SCRIPTS("blocks/toggle_show_all.sh"), NULL };
+static const char *displaycmd[] = { "bash", SCRIPTS("display.sh"), NULL };
 static const char *nemocmd[] = { "nemo", NULL };
 static const char *terstmcmd[]  = { "st", NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
-// static const char *volup[]  = { "/home/yf/space/scripts/volm.sh", "0" };
-// static const char *voldown[]  = { "/home/yf/space/scripts/volm.sh", "1" };
-// static const char *voltoogle[]  = { "/home/yf/space/scripts/volm.sh", "2" };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_r,      spawn,          {.v = roficmd } }, // Super+r rofi应用启动器
 	{ MODKEY,                       XK_a,      spawn,          {.v = statusshowallcmd } }, // Super+a 显示状态栏信息部分的所有信息
+	{ MODKEY,                       XK_p,      spawn,          {.v = displaycmd } }, // Super+b 使用rofi切换显示器
 	{ MODKEY,                       XK_e,      spawn,          {.v = nemocmd } }, // Spuer+e nemo文件管理器
 	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } }, // Super+enter alacrity终端
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = terstmcmd } }, // Super+Shift+enter st终端
@@ -211,15 +210,11 @@ static const Key keys[] = {
 	// { MODKEY|Mod1Mask|ShiftMask,    XK_9,      incrovgaps,     {.i = -1 } },
 	// { MODKEY|Mod1Mask,              XK_0,      togglegaps,     {0} },
 	// { MODKEY|Mod1Mask|ShiftMask,    XK_0,      defaultgaps,    {0} },
-	/* 自定义快捷键 */
-	// { MODKEY,       	      		XK_F3,      spawn,           {.v = volup } },
-	// { MODKEY,             			XK_F2,      spawn,           {.v = voldown } },
-	// { MODKEY,             			XK_F4,      spawn,           {.v = voltoogle } },
 	// 功能键配置
 
-	{ 0,                            XF86XK_AudioMute,         spawn, SHCMD(SCRIPTS("dwm/volume.sh mute")) },
-	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD(SCRIPTS("dwm/volume.sh inc")) },
-	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD(SCRIPTS("dwm/volume.sh dec")) },
+	{ 0,                            XF86XK_AudioMute,         spawn, SHCMD(SCRIPTS("volume.sh mute")) },
+	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD(SCRIPTS("volume.sh inc")) },
+	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD(SCRIPTS("volume.sh dec")) },
 
 	{ 0,                            XF86XK_AudioPause,        spawn, SHCMD("playerctl pause") }, // 暂停
 	{ 0,                            XF86XK_AudioPrev,         spawn, SHCMD("playerctl previous") }, // 上一个
