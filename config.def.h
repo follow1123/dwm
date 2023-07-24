@@ -222,6 +222,10 @@ static const Key keys[] = {
 	{ 0,                            XF86XK_AudioPlay,         spawn, SHCMD("playerctl play-pause") }, // 播放/暂停
 	{ 0,                            XF86XK_AudioStop,         spawn, SHCMD("playerctl stop") }, // 停止
 
+
+	{ 0,                            XF86XK_MonBrightnessUp,   spawn, SHCMD(SCRIPTS("light.sh inc")) },
+	{ 0,                            XF86XK_MonBrightnessDown, spawn, SHCMD(SCRIPTS("light.sh dec")) },
+
 	// { 0,                            XF86XK_MonBrightnessUp,   spawn, SHCMD("light -A 5; notify-send -r 9123 -h int:value:`light` -h string:hlcolor:#dddddd 'Backlight' " ) },
 	// { 0,                            XF86XK_MonBrightnessDown, spawn, SHCMD("light -U 5; notify-send -r 9123 -h int:value:`light` -h string:hlcolor:#dddddd 'Backlight' " ) },
 };
