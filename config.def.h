@@ -115,7 +115,7 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
 static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_fg, "-nf", col_fg, "-sb", col_fg, "-sf", col_fg, NULL };
 
-static const char *roficmd[] = { "rofi", "-show", "run", NULL };
+static const char *roficmd[] = { "bash", SCRIPTS("rofi_run.sh"), NULL };
 static const char *statusshowallcmd[] = { "bash", SCRIPTS("blocks/toggle_show_all.sh"), NULL };
 static const char *displaycmd[] = { "bash", SCRIPTS("display.sh"), NULL };
 static const char *nemocmd[] = { "nemo", NULL };
@@ -212,9 +212,9 @@ static const Key keys[] = {
 	// { MODKEY|Mod1Mask|ShiftMask,    XK_0,      defaultgaps,    {0} },
 	// 功能键配置
 
-	{ 0,                            XF86XK_AudioMute,         spawn, SHCMD(SCRIPTS("volume.sh mute")) },
-	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD(SCRIPTS("volume.sh inc")) },
-	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD(SCRIPTS("volume.sh dec")) },
+	{ 0,                            XF86XK_AudioMute,         spawn, SHCMD(SCRIPTS("volume_lock.sh mute")) },
+	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD("flock -xn /tmp/volume.lock -c '/home/yf/space/scripts/sde/volume.sh inc'") },
+	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD("flock -xn /tmp/volume.lock -c '/home/yf/space/scripts/sde/volume.sh dec'") },
 
 	{ 0,                            XF86XK_AudioPause,        spawn, SHCMD("playerctl pause") }, // 暂停
 	{ 0,                            XF86XK_AudioPrev,         spawn, SHCMD("playerctl previous") }, // 上一个
