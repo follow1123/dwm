@@ -131,14 +131,14 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } }, // Super+enter alacrity终端
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = terstmcmd } }, // Super+Shift+enter st终端
 	{ MODKEY,                       XK_b,      togglebar,      {0} }, // Spuer+b 隐藏/显示状态栏
-	// { MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } },
-	// { MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
+	{ MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } },
+	{ MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
 	// { MODKEY,                       XK_j,      focusstack,     {.i = +1 } },
 	// { MODKEY,                       XK_k,      focusstack,     {.i = -1 } },
 	{ MODKEY,                       XK_j,      focusstackvis,  {.i = +1 } },
 	{ MODKEY,                       XK_k,      focusstackvis,  {.i = -1 } },
-	{ MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
-	{ MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
+	// { MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
+	// { MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
 	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
 	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	// 窗口宽度调整
