@@ -657,6 +657,15 @@ void clientmessage(XEvent *e) {
   } else if (cme->message_type == netatom[NetActiveWindow]) {
     if (c != selmon->sel && !c->isurgent)
       seturgent(c, 1);
+		// 若不是当前显示器 则跳转到对应显示器
+		if (c->mon != selmon) {
+			focusmon(&(Arg) { .i = +1 });
+		}
+		// 若不适当前tag 则跳转到对应tag
+		if (!ISVISIBLE(c)) {
+			view(&(Arg) { .ui = c->tags });
+			focus(c);
+		}
   }
 }
 
