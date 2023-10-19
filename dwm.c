@@ -1007,6 +1007,9 @@ void enternotify(XEvent *e) {
   } else if (!c || c == selmon->sel)
     return;
   focus(c);
+    // 添加鼠标移动到浮动窗口上时 将该窗口置顶
+    if (m->sel->isfloating || !m->lt[m->sellt]->arrange)
+        XRaiseWindow(dpy, m->sel->win);
 }
 
 void expose(XEvent *e) {
