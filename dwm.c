@@ -1314,6 +1314,7 @@ void killclient(const Arg *arg) {
   }
 }
 
+// 开启一个新窗口
 void manage(Window w, XWindowAttributes *wa) {
   Client *c, *t = NULL;
   Window trans = None;
@@ -2571,6 +2572,7 @@ void view(const Arg *arg) {
   arrange(selmon);
 }
 
+// 在显示器列表内查找和当前Window相同的client(应用)
 Client *wintoclient(Window w) {
   Client *c;
   Monitor *m;
