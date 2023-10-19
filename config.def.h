@@ -37,7 +37,7 @@ static const char col_error[]        = "#DC143C";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_fg, col_bg1, col_bg1 },
-	[SchemeSel]  = { col_fg, col_bg2,  col_bg2 },
+	[SchemeSel]  = { col_fg, col_bg2,  col_bg1 },
 	[SchemeHid]  = { col_bg2,  col_bg1, col_bg2  },
 	[SchemeUnderline]  = { col_primary, col_bg1, col_bg2 },
 	[SchemeDebian] = { col_debian, col_bg1, col_bg2 },
@@ -104,7 +104,7 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 
 #define STATUSBAR "dwmblocks"
 
-#define SCRIPTS(name) "/home/yf/space/scripts/sde/"name
+#define SCRIPTS(name) "/home/yf/sde/scripts/dwm/"name
 
 // dwm重启后复原窗口位置临时文件
 #define SESSION_FILE "/tmp/dwm-session"
@@ -121,6 +121,7 @@ static const char *displaycmd[] = { "bash", SCRIPTS("display.sh"), NULL };
 static const char *nemocmd[] = { "nemo", NULL };
 static const char *terstmcmd[]  = { "st", NULL };
 static const char *termcmd[]  = { "alacritty", NULL };
+static const char *window_list_cmd[]  = { "rofi", "-show", "window", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -139,12 +140,13 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_k,      focusstackvis,  {.i = -1 } },
 	// { MODKEY|ShiftMask,             XK_j,      focusstackhid,  {.i = +1 } },
 	// { MODKEY|ShiftMask,             XK_k,      focusstackhid,  {.i = -1 } },
-	{ MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
-	{ MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
+	// { MODKEY,                       XK_i,      incnmaster,     {.i = +1 } },
+	// { MODKEY,                       XK_d,      incnmaster,     {.i = -1 } },
 	// 窗口宽度调整
-	{ MODKEY,                       XK_h,      setmfact,       {.f = -0.05} },
-	{ MODKEY,                       XK_l,      setmfact,       {.f = +0.05} },
+	{ MODKEY,                       XK_Left,      setmfact,       {.f = -0.05} },
+	{ MODKEY,                       XK_Right,     setmfact,       {.f = +0.05} },
 	// { MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
+	{ MODKEY,                       XK_Tab, spawn,             {.v = window_list_cmd } }, // Super+tab 切换应用
 	{ Mod1Mask,                     XK_Tab,    view,           {0} }, // Alt+tab 切换工作区
 	{ MODKEY,                       XK_q,      killclient,     {0} },
 	{ MODKEY|Mod1Mask,              XK_1,      setlayout,      {.v = &layouts[0]} },
@@ -213,8 +215,8 @@ static const Key keys[] = {
 	// 功能键配置
 
 	{ 0,                            XF86XK_AudioMute,         spawn, SHCMD(SCRIPTS("volume_lock.sh mute")) },
-	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD("flock -xn /tmp/volume.lock -c '/home/yf/space/scripts/sde/volume.sh inc'") },
-	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD("flock -xn /tmp/volume.lock -c '/home/yf/space/scripts/sde/volume.sh dec'") },
+	{ 0,                            XF86XK_AudioRaiseVolume,  spawn, SHCMD("flock -xn /tmp/volume.lock -c '/home/yf/sde/scripts/dwm/volume.sh inc'") },
+	{ 0,                            XF86XK_AudioLowerVolume,  spawn, SHCMD("flock -xn /tmp/volume.lock -c '/home/yf/sde/scripts/dwm/volume.sh dec'") },
 
 	{ 0,                            XF86XK_AudioPause,        spawn, SHCMD("playerctl pause") }, // 暂停
 	{ 0,                            XF86XK_AudioPrev,         spawn, SHCMD("playerctl previous") }, // 上一个
