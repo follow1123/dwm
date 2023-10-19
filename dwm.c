@@ -486,8 +486,7 @@ void arrangemon(Monitor *m) {
 void attach(Client *c) {
   if (!newclientathead) {
     Client **tc;
-    for (tc = &c->mon->clients; *tc; tc = &(*tc)->next)
-      ;
+    for (tc = &c->mon->clients; *tc; tc = &(*tc)->next);
     *tc = c;
     c->next = NULL;
   } else {
@@ -1763,7 +1762,9 @@ void rotatestack(const Arg *arg) {
       ;
     if (c) {
       detach(c);
-      attach(c);
+		// 由于之前将窗口打开方式默认设置为在栈顶打开，导致无法移动窗口，使用原来的方式修复
+		c->next = c->mon->clients;
+		c->mon->clients = c;
       detachstack(c);
       attachstack(c);
     }
