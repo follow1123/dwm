@@ -2153,16 +2153,38 @@ void togglebar(const Arg *arg) {
 }
 
 void togglefloating(const Arg *arg) {
-  if (!selmon->sel)
-    return;
-  if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
-    return;
-  selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-  if (selmon->sel->isfloating)
-    // 当工作区布局为堆栈时，拉出一个窗口默认设置为屏幕的2/3的比例
- 		resize(selmon->sel, selmon->wx + selmon->ww / 6, selmon->wy + selmon->wh / 6,
-			selmon->ww / 3 * 2, selmon->wh / 3 * 2, 0);
-  arrange(selmon);
+	Client *c;
+	int existed = 0;
+	int x = selmon->wx + selmon->ww / 6,
+	y = selmon->wy + selmon->wh / 6,
+	w = selmon->ww / 3 * 2,
+	h = selmon->wh / 3 * 2;
+
+	if (!selmon->sel)
+		return;
+	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
+		return;
+	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
+
+	// 打开浮动窗口时分配一个位置时窗口不重叠
+	if (!(arg && arg->ui == 1)) {
+		if (selmon->sel->isfloating) {
+			for (c=selmon->clients; c; c = c->next) {
+				if (ISVISIBLE(c) && !HIDDEN(c) && c->x == x && c->y == y) {
+					existed = 1;
+					break;
+				}
+			}
+			if (existed) {
+				int d1 = 0, d2 = 0;
+				while (d1 == 0) d1 = rand()%5 - 2;
+				while (d2 == 0) d2 = rand()%5 - 2;
+				resize(selmon->sel, x + (selmon->ww / 20) * d1, y + selmon->wh / 20 * d2, w, h, 0);
+			} else
+				resize(selmon->sel, x, y, w, h, 0);
+		}
+	}
+	arrange(selmon);
 }
 
 void toggletag(const Arg *arg) {
