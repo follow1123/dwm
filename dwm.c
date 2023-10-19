@@ -846,57 +846,34 @@ void drawbar(Monitor *m) {
   /* draw status first so it can be overdrawn by tags later */
   if (m == selmon) { /* status is only drawn on selected monitor */
     // char *text, *s, ch, *tt, *mid = " ", *textt, *schemeint, *delimiter = "~";
-    char *text, *s, ch;
+    char *text, *s, ch, block_sig_int;
     drw_setscheme(drw, scheme[SchemeNorm]);
 
+	// 遍历所有blocks并绘制
     x = 0;
     for (text = s = stext; *s; s++) {
       if ((unsigned char)(*s) < ' ') {
         ch = *s;
         *s = '\0';
 
-		// tt = strtok(text, delimiter);
-		// textt = (char*)malloc((strlen(tt) + strlen(mid) + 1) * sizeof(char));
-		// strcpy(textt, tt);
-		// strcat(textt, mid);
-
-		// textt = strtok(text, delimiter);
-		// schemeint = strtok(NULL, delimiter);
-		// if (schemeint != NULL){
-			// drw_setscheme(drw, scheme[atoi(schemeint)]);
-		// } else {
-			// drw_setscheme(drw, scheme[SchemeNorm]);
-		// }
-		// tw = TEXTW(textt) - lrpad;
 		tw = TEXTW(text) - lrpad;
-		// printf("%d\n", atoi(token2));
-		// textt = strtok(text, "~");
-		// while (textt != NULL){
-		// 	schemeint = strtok(text, "~");
-		// }
-		// if (schemeint != NULL){
-			// drw_setscheme(drw, scheme[atoi(schemeint)]);
-			// schemeint = NULL;
-		// } else {
-		// }
+		if (block_sig_int && block_sig_int == 1) {
+			drw_setscheme(drw, scheme[SchemeDebian]);
+		}else {
+			drw_setscheme(drw, scheme[SchemeNorm]);
+		}
 
-		drw_setscheme(drw, scheme[SchemeNorm]);
-        // drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, textt, 0);
+		// fprintf(stderr, "dwm: signal is %d, text is %s\n", ch, text);
+
         drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, text, 0);
         x += tw;
         *s = ch;
         text = s + 1;
+		// 由于当前循环内的signal是下一个循环的signal,所以这里保存
+		block_sig_int = ch;
       }
     }
-	// textt = strtok(text, delimiter);
-	// schemeint = strtok(NULL, delimiter);
-	// if (schemeint != NULL){
-		// drw_setscheme(drw, scheme[atoi(schemeint)]);
-	// } else {
-		// drw_setscheme(drw, scheme[SchemeNorm]);
-	// }
-    // tw = TEXTW(textt) - lrpad + 2;
-    // drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, textt, 0);
+	// 绘制最后一个block
     tw = TEXTW(text) - lrpad + 2;
     drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, text, 0);
     tw = statusw;
