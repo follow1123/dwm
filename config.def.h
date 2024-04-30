@@ -18,7 +18,7 @@ static const char *fonts[]          = {
 	"WenQuanYi Micro Hei Mono:type=Regular:size=12:entialias=true:autohint=true", /* 中文字体 */
 	"Symbols Nerd Font Mono:pixelsize=22:type=2048-em:entialias=true:autohint=true", /* 符号字体 */
 };
-static const char dmenufont[]       = "monospace:size=14";
+static const char dmenufont[]       = "JetBrains Mono:size=10:type=Regular:entialias=true:autohint=true";
 // 状态栏透明补丁
 static unsigned int baralpha        = 0xd0; // 透明度16进制
 static unsigned int borderalpha     = OPAQUE;
@@ -113,24 +113,23 @@ static const int newclientathead    = 0;         /* 定义新窗口在栈顶还�
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_fg, "-nf", col_fg, "-sb", col_fg, "-sf", col_fg, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", col_bg1, "-nf", col_fg1, "-sb", col_bg2, "-sf", col_primary, NULL };
 
-static const char *roficmd[] = { "bash", SCRIPTS("rofi_run.sh"), NULL };
 static const char *statusshowallcmd[] = { "bash", SCRIPTS("blocks/toggle_show_all.sh"), NULL };
 static const char *displaycmd[] = { "bash", SCRIPTS("display.sh"), NULL };
 static const char *nemocmd[] = { "nemo", NULL };
-static const char *terstmcmd[]  = { "st", NULL };
-static const char *termcmd[]  = { "alacritty", NULL };
-static const char *window_list_cmd[]  = { "rofi", "-show", "window", NULL };
+static const char *stcmd[]  = { "st", NULL };
+static const char *alacritycmd[]  = { "alacritty", NULL };
+static const char *window_list_cmd[]  = { "bash", SCRIPTS("window_list.sh"), NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
-	{ MODKEY,                       XK_r,      spawn,          {.v = roficmd } }, // Super+r rofi应用启动器
+	{ MODKEY,                       XK_r,      spawn,          {.v = dmenucmd } }, // Super+r dmenu应用启动器
 	{ MODKEY,                       XK_a,      spawn,          {.v = statusshowallcmd } }, // Super+a 显示状态栏信息部分的所有信息
-	{ MODKEY,                       XK_p,      spawn,          {.v = displaycmd } }, // Super+b 使用rofi切换显示器
+	{ MODKEY,                       XK_p,      spawn,          {.v = displaycmd } }, // Super+b 使用dmenu切换显示器
 	{ MODKEY,                       XK_e,      spawn,          {.v = nemocmd } }, // Spuer+e nemo文件管理器
-	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } }, // Super+enter alacrity终端
-	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = terstmcmd } }, // Super+Shift+enter st终端
+	{ MODKEY,                       XK_Return, spawn,          {.v = alacritycmd } }, // Super+enter alacrity终端
+	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = stcmd } }, // Super+Shift+enter st终端
 	{ MODKEY,                       XK_b,      togglebar,      {0} }, // Spuer+b 隐藏/显示状态栏
 	{ MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
