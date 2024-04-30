@@ -123,6 +123,8 @@ static const char *nemocmd[] = { "nemo", NULL };
 static const char *stcmd[]  = { "st", NULL };
 static const char *alacritycmd[]  = { "alacritty", NULL };
 static const char *window_list_cmd[]  = { "bash", SCRIPTS("window_list.sh"), NULL };
+static const char scratchpadname[] = "scratchpad";
+static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "120x34", NULL };
 
 static const Key keys[] = {
 	/* modifier                     key        function        argument */
@@ -132,6 +134,7 @@ static const Key keys[] = {
 	{ MODKEY,                       XK_e,      spawn,          {.v = nemocmd } }, // Spuer+e nemo文件管理器
 	{ MODKEY,                       XK_Return, spawn,          {.v = alacritycmd } }, // Super+enter alacrity终端
 	{ MODKEY|ShiftMask,             XK_Return, spawn,          {.v = stcmd } }, // Super+Shift+enter st终端
+	{ MODKEY,                       XK_grave,  togglescratch,  {.v = scratchpadcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} }, // Spuer+b 隐藏/显示状态栏
 	{ MODKEY|ShiftMask,             XK_j,      rotatestack,    {.i = +1 } },
 	{ MODKEY|ShiftMask,             XK_k,      rotatestack,    {.i = -1 } },
