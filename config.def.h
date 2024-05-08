@@ -240,7 +240,7 @@ static const Button buttons[] = {
     { ClkLtSymbol,   0,           Button3, setlayout,      {.v = &layouts[2]} }, /* 切换布局 */
     /* 点击窗口标题事件 */
     { ClkWinTitle,   0,           Button1, togglewin,      {0} }, /* 隐藏或显示窗口 */
-    { ClkWinTitle,   0,           Button2, zoom,           {0} }, /* 关闭窗口 */
+    { ClkWinTitle,   0,           Button2, killclient,     {.i = 0} }, /* 关闭窗口 */
     /* 状态栏鼠标事件 */          
     { ClkStatusText, 0,           Button1, sigstatusbar,   {.i = 1} }, /* 向dwmblocks发送鼠标左键信号 */
     { ClkStatusText, 0,           Button2, sigstatusbar,   {.i = 2} }, /* 向dwmblocks发送鼠标中键信号 */

@@ -1338,6 +1338,22 @@ void keypress(XEvent *e) {
 }
 
 void killclient(const Arg *arg) {
+
+  /* 支持关闭参数内的窗口 */
+  if (arg != NULL && arg->v != NULL) {
+    Client *c = (Client *)arg->v;
+    if (!sendevent(c, wmatom[WMDelete])) {
+      XGrabServer(dpy);
+      XSetErrorHandler(xerrordummy);
+      XSetCloseDownMode(dpy, DestroyAll);
+      XKillClient(dpy, c->win);
+      XSync(dpy, False);
+      XSetErrorHandler(xerror);
+      XUngrabServer(dpy);
+    }
+    return;
+  }
+
   if (!selmon->sel)
     return;
   if (!sendevent(selmon->sel, wmatom[WMDelete])) {
