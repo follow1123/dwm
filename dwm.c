@@ -164,10 +164,10 @@ struct Monitor {
   int bt;             /* number of tasks */
   int mx, my, mw, mh; /* screen size */
   int wx, wy, ww, wh; /* window area  */
-	int gappih;           /* horizontal gap between windows */
-	int gappiv;           /* vertical gap between windows */
-	int gappoh;           /* horizontal outer gaps */
-	int gappov;           /* vertical outer gaps */
+  int gappih;         /* horizontal gap between windows */
+  int gappiv;         /* vertical gap between windows */
+  int gappoh;         /* horizontal outer gaps */
+  int gappov;         /* vertical outer gaps */
   unsigned int seltags;
   unsigned int sellt;
   unsigned int tagset[2];
@@ -665,15 +665,17 @@ void clientmessage(XEvent *e) {
   } else if (cme->message_type == netatom[NetActiveWindow]) {
     if (c != selmon->sel && !c->isurgent)
       seturgent(c, 1);
-		// 若不是当前显示器 则跳转到对应显示器
-		if (c->mon != selmon) {
-			focusmon(&(Arg) { .i = +1 });
-		}
-		// 若不适当前tag 则跳转到对应tag
-		if (!ISVISIBLE(c)) {
-			view(&(Arg) { .ui = c->tags });
-			focus(c);
-		}
+    // 若不是当前显示器 则跳转到对应显示器
+    if (c->mon != selmon) {
+      Arg arg = {.i = +1};
+      focusmon(&arg);
+    }
+    // 若不适当前tag 则跳转到对应tag
+    if (!ISVISIBLE(c)) {
+      Arg arg = {.ui = c->tags};
+      view(&arg);
+      focus(c);
+    }
   }
 }
 
@@ -781,10 +783,10 @@ Monitor *createmon(void) {
   m->nmaster = nmaster;
   m->showbar = showbar;
   m->topbar = topbar;
-	m->gappih = gappih;
-	m->gappiv = gappiv;
-	m->gappoh = gappoh;
-	m->gappov = gappov;
+  m->gappih = gappih;
+  m->gappiv = gappiv;
+  m->gappoh = gappoh;
+  m->gappov = gappov;
   m->lt[0] = &layouts[0];
   m->lt[1] = &layouts[1 % LENGTH(layouts)];
   strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
@@ -851,7 +853,7 @@ Monitor *dirtomon(int dir) {
 }
 
 void drawbar(Monitor *m) {
-  int x, w, tw = 0, n = 0, scm, status_index;
+  int x, w, tw = 0, n = 0, scm;
   int boxs = drw->fonts->h / 9;
   int boxw = drw->fonts->h / 6 + 2;
   unsigned int i, occ = 0, urg = 0;
@@ -863,34 +865,31 @@ void drawbar(Monitor *m) {
   /* draw status first so it can be overdrawn by tags later */
   if (m == selmon) { /* status is only drawn on selected monitor */
     // char *text, *s, ch, *tt, *mid = " ", *textt, *schemeint, *delimiter = "~";
-    char *text, *s, ch, block_sig_int;
+    char *text, *s, ch, block_sig_int = '\0';
     drw_setscheme(drw, scheme[SchemeNorm]);
 
-	// 遍历所有blocks并绘制
+    // 遍历所有blocks并绘制
     x = 0;
     for (text = s = stext; *s; s++) {
       if ((unsigned char)(*s) < ' ') {
         ch = *s;
         *s = '\0';
-
-		tw = TEXTW(text) - lrpad;
-		if (block_sig_int && block_sig_int == 1) {
-			drw_setscheme(drw, scheme[SchemeDebian]);
-		}else {
-			drw_setscheme(drw, scheme[SchemeNorm]);
-		}
-
-		// fprintf(stderr, "dwm: signal is %d, text is %s\n", ch, text);
+        tw = TEXTW(text) - lrpad;
+        if (block_sig_int != '\0' && block_sig_int == 1) {
+          drw_setscheme(drw, scheme[SchemeDebian]);
+        }else {
+          drw_setscheme(drw, scheme[SchemeNorm]);
+        }
 
         drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, text, 0);
         x += tw;
         *s = ch;
         text = s + 1;
-		// 由于当前循环内的signal是下一个循环的signal,所以这里保存
-		block_sig_int = ch;
+        // 由于当前循环内的signal是下一个循环的signal,所以这里保存
+        block_sig_int = ch;
       }
     }
-	// 绘制最后一个block
+    // 绘制最后一个block
     tw = TEXTW(text) - lrpad + 2;
     drw_text(drw, m->ww - statusw + x, 0, tw, bh, 0, text, 0);
     tw = statusw;
@@ -913,9 +912,6 @@ void drawbar(Monitor *m) {
         drw,
         scheme[m->tagset[m->seltags] & 1 << i ? SchemeUnderline : SchemeNorm]);
     drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], urg & 1 << i);
-    // if(m->tagset[m->seltags] & 1 << i){
-    // 	drw_rect(drw, x, bh - 2, w, 2, 1, 0);
-    // }
     x += w;
   }
   w = TEXTW(m->ltsymbol);
@@ -936,7 +932,6 @@ void drawbar(Monitor *m) {
         if (!ISVISIBLE(c))
           continue;
         if (m->sel == c)
-          // scm = SchemeSel;
           scm = SchemeUnderline;
         else if (HIDDEN(c))
           scm = SchemeHid;
@@ -1337,7 +1332,7 @@ void manage(Window w, XWindowAttributes *wa) {
   c->w = c->oldw = wa->width;
   c->h = c->oldh = wa->height;
   c->oldbw = wa->border_width;
-	c->cfact = 1.0;
+  c->cfact = 1.0;
 
   updatetitle(c);
   if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
@@ -1358,10 +1353,10 @@ void manage(Window w, XWindowAttributes *wa) {
 
   selmon->tagset[selmon->seltags] &= ~scratchtag;
   if (!strcmp(c->name, scratchpadname)) {
-	  c->mon->tagset[c->mon->seltags] |= c->tags = scratchtag;
-	  c->isfloating = True;
-	  c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
-	  c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
+    c->mon->tagset[c->mon->seltags] |= c->tags = scratchtag;
+    c->isfloating = True;
+    c->x = c->mon->wx + (c->mon->ww / 2 - WIDTH(c) / 2);
+    c->y = c->mon->wy + (c->mon->wh / 2 - HEIGHT(c) / 2);
   }
 
   wc.border_width = c->bw;
@@ -1552,69 +1547,68 @@ void propertynotify(XEvent *e) {
 }
 
 // 添加保存、恢复工作区窗口信息方法
-void saveSession(void)
-{
-	FILE *fw = fopen(SESSION_FILE, "w");
-	for (Client *c = selmon->clients; c != NULL; c = c->next) { // get all the clients with their tags and write them to the file
-		fprintf(fw, "%lu %u\n", c->win, c->tags);
-	}
-	fclose(fw);
+void saveSession(void) {
+  FILE *fw = fopen(SESSION_FILE, "w");
+  for (Client *c = selmon->clients; c != NULL; c = c->next) { // get all the clients with their tags and write them to the file
+  	fprintf(fw, "%lu %u\n", c->win, c->tags);
+  }
+  fclose(fw);
 }
 
-void restoreSession(void)
-{
-	// restore session
-	FILE *fr = fopen(SESSION_FILE, "r");
-	if (!fr)
-		return;
-
-	char *str = (char*)malloc(23 * sizeof(char)); // allocate enough space for excepted input from text file
-	while (fscanf(fr, "%[^\n] ", str) != EOF) { // read file till the end
-		long unsigned int winId;
-		unsigned int tagsForWin;
-		int check = sscanf(str, "%lu %u", &winId, &tagsForWin); // get data
-		if (check != 2) // break loop if data wasn't read correctly
-			break;
-		
-		for (Client *c = selmon->clients; c ; c = c->next) { // add tags to every window by winId
-			if (c->win == winId) {
-				c->tags = tagsForWin;
-				break;
-			}
-		}
-    }
-
-	for (Client *c = selmon->clients; c ; c = c->next) { // refocus on windows
-		focus(c);
-		restack(c->mon);
-	}
-
-	for (Monitor *m = selmon; m; m = m->next) // rearrange all monitors
-		arrange(m);
-
-	free(str);
-	fclose(fr);
-	
-	// delete a file
-	remove(SESSION_FILE);
+void restoreSession(void) {
+  // restore session
+  FILE *fr = fopen(SESSION_FILE, "r");
+  if (!fr)
+  	return;
+  
+  char *str = (char*)malloc(23 * sizeof(char)); // allocate enough space for excepted input from text file
+  while (fscanf(fr, "%[^\n] ", str) != EOF) { // read file till the end
+  	long unsigned int winId;
+  	unsigned int tagsForWin;
+  	int check = sscanf(str, "%lu %u", &winId, &tagsForWin); // get data
+  	if (check != 2) // break loop if data wasn't read correctly
+  	  break;
+  	
+  	for (Client *c = selmon->clients; c ; c = c->next) { // add tags to every window by winId
+  	  if (c->win == winId) {
+  	    c->tags = tagsForWin;
+  	    break;
+  	  }
+  	}
+  }
+  
+  for (Client *c = selmon->clients; c ; c = c->next) { // refocus on windows
+  	focus(c);
+  	restack(c->mon);
+  }
+  
+  for (Monitor *m = selmon; m; m = m->next) // rearrange all monitors
+  	arrange(m);
+  
+  free(str);
+  fclose(fr);
+  
+  // delete a file
+  remove(SESSION_FILE);
 }
 
-//gxt_kt
+// gxt_kt
 void saveTagSession() {
-	FILE *fw = fopen(SESSION_TAG_FILE, "w");
+  FILE *fw = fopen(SESSION_TAG_FILE, "w");
   fprintf(fw, "%d\n", selmon->sel->tags);
-	fclose(fw);
+  fclose(fw);
 }
-//gxt_kt
-void restoreTagSession() {
-	FILE *fr = fopen(SESSION_TAG_FILE, "r");
-	if (!fr)
-		return;
 
-	char str[10] = {0};
-	if (fscanf(fr, "%[^\n] ", str) != EOF) { // read file
+// gxt_kt
+void restoreTagSession() {
+  FILE *fr = fopen(SESSION_TAG_FILE, "r");
+  if (!fr)
+    return;
+  
+  char str[10] = {0};
+  if (fscanf(fr, "%[^\n] ", str) != EOF) { // read file
     int tag=0;
-		int check = sscanf(str, "%d",&tag); // get data
+    // int check = sscanf(str, "%d",&tag); // get data
     // view(&(Arg) { .ui = tag }); //切换到对应tag
     Arg arg_;
     arg_.ui=tag;
@@ -1624,10 +1618,10 @@ void restoreTagSession() {
   for (Monitor *m = selmon; m; m = m->next) // rearrange all monitors
     arrange(m);
 
-	fclose(fr);
-	
-	// delete a file
-	remove(SESSION_TAG_FILE);
+  fclose(fr);
+  
+  // delete a file
+  remove(SESSION_TAG_FILE);
 }
 
 void quit(const Arg *arg) {
@@ -1782,9 +1776,9 @@ void rotatestack(const Arg *arg) {
       ;
     if (c) {
       detach(c);
-		// 由于之前将窗口打开方式默认设置为在栈顶打开，导致无法移动窗口，使用原来的方式修复
-		c->next = c->mon->clients;
-		c->mon->clients = c;
+      // 由于之前将窗口打开方式默认设置为在栈顶打开，导致无法移动窗口，使用原来的方式修复
+      c->next = c->mon->clients;
+      c->mon->clients = c;
       detachstack(c);
       attachstack(c);
     }
@@ -1933,121 +1927,116 @@ void setlayout(const Arg *arg) {
     drawbar(selmon);
 }
 
-void
-runautostart(void)
-{
-	char *pathpfx;
-	char *path;
-	char *xdgdatahome;
-	char *home;
-	struct stat sb;
-
-	if ((home = getenv("HOME")) == NULL)
-		/* this is almost impossible */
-		return;
-
-	/* if $XDG_DATA_HOME is set and not empty, use $XDG_DATA_HOME/dwm,
-	 * otherwise use ~/.local/share/dwm as autostart script directory
-	 */
-	xdgdatahome = getenv("XDG_DATA_HOME");
-	if (xdgdatahome != NULL && *xdgdatahome != '\0') {
-		/* space for path segments, separators and nul */
-		pathpfx = ecalloc(1, strlen(xdgdatahome) + strlen(dwmdir) + 2);
-
-		if (sprintf(pathpfx, "%s/%s", xdgdatahome, dwmdir) <= 0) {
-			free(pathpfx);
-			return;
-		}
-	} else {
-		/* space for path segments, separators and nul */
-		pathpfx = ecalloc(1, strlen(home) + strlen(localshare)
-		                     + strlen(dwmdir) + 3);
-
-		if (sprintf(pathpfx, "%s/%s/%s", home, localshare, dwmdir) < 0) {
-			free(pathpfx);
-			return;
-		}
-	}
-
-	/* check if the autostart script directory exists */
-	if (! (stat(pathpfx, &sb) == 0 && S_ISDIR(sb.st_mode))) {
-		/* the XDG conformant path does not exist or is no directory
-		 * so we try ~/.dwm instead
-		 */
-		char *pathpfx_new = realloc(pathpfx, strlen(home) + strlen(dwmdir) + 3);
-		if(pathpfx_new == NULL) {
-			free(pathpfx);
-			return;
-		}
-		pathpfx = pathpfx_new;
-
-		if (sprintf(pathpfx, "%s/.%s", home, dwmdir) <= 0) {
-			free(pathpfx);
-			return;
-		}
-	}
-
-	/* try the blocking script first */
-	path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
-	if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0) {
-		free(path);
-		free(pathpfx);
-	}
-
-	if (access(path, X_OK) == 0)
-		system(path);
-
-	/* now the non-blocking script */
-	if (sprintf(path, "%s/%s", pathpfx, autostartsh) <= 0) {
-		free(path);
-		free(pathpfx);
-	}
-
-	if (access(path, X_OK) == 0)
-		system(strcat(path, " &"));
-
-	free(pathpfx);
-	free(path);
+void runautostart(void) {
+  char *pathpfx;
+  char *path;
+  char *xdgdatahome;
+  char *home;
+  struct stat sb;
+  
+  if ((home = getenv("HOME")) == NULL)
+    /* this is almost impossible */
+    return;
+  
+  /* if $XDG_DATA_HOME is set and not empty, use $XDG_DATA_HOME/dwm,
+   * otherwise use ~/.local/share/dwm as autostart script directory
+   */
+  xdgdatahome = getenv("XDG_DATA_HOME");
+  if (xdgdatahome != NULL && *xdgdatahome != '\0') {
+    /* space for path segments, separators and nul */
+    pathpfx = ecalloc(1, strlen(xdgdatahome) + strlen(dwmdir) + 2);
+    
+    if (sprintf(pathpfx, "%s/%s", xdgdatahome, dwmdir) <= 0) {
+      free(pathpfx);
+      return;
+    }
+  } else {
+    /* space for path segments, separators and nul */
+    pathpfx = ecalloc(1, strlen(home) + strlen(localshare)
+                         + strlen(dwmdir) + 3);
+  
+  	if (sprintf(pathpfx, "%s/%s/%s", home, localshare, dwmdir) < 0) {
+  	  free(pathpfx);
+  	  return;
+  	}
+  }
+  
+  /* check if the autostart script directory exists */
+  if (! (stat(pathpfx, &sb) == 0 && S_ISDIR(sb.st_mode))) {
+    /* the XDG conformant path does not exist or is no directory
+     * so we try ~/.dwm instead
+     */
+    char *pathpfx_new = realloc(pathpfx, strlen(home) + strlen(dwmdir) + 3);
+    if(pathpfx_new == NULL) {
+      free(pathpfx);
+      return;
+    }
+    pathpfx = pathpfx_new;
+    
+    if (sprintf(pathpfx, "%s/.%s", home, dwmdir) <= 0) {
+      free(pathpfx);
+      return;
+    }
+  }
+  
+  /* try the blocking script first */
+  path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
+  if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0) {
+    free(path);
+    free(pathpfx);
+  }
+  
+  if (access(path, X_OK) == 0)
+    system(path);
+  
+  /* now the non-blocking script */
+  if (sprintf(path, "%s/%s", pathpfx, autostartsh) <= 0) {
+    free(path);
+    free(pathpfx);
+  }
+  
+  if (access(path, X_OK) == 0)
+    system(strcat(path, " &"));
+  
+  free(pathpfx);
+  free(path);
 }
 
-void
-togglescratch(const Arg *arg)
-{
-	Client *c;
-	unsigned int found = 0;
-
-	for (c = selmon->clients; c && !(found = c->tags & scratchtag); c = c->next);
-	if (found) {
-		unsigned int newtagset = selmon->tagset[selmon->seltags] ^ scratchtag;
-		if (newtagset) {
-			selmon->tagset[selmon->seltags] = newtagset;
-			focus(NULL);
-			arrange(selmon);
-		}
-		if (ISVISIBLE(c)) {
-			focus(c);
-			restack(selmon);
-		}
-	} else
-		spawn(arg);
+void togglescratch(const Arg *arg) {
+  Client *c;
+  unsigned int found = 0;
+  
+  for (c = selmon->clients; c && !(found = c->tags & scratchtag); c = c->next);
+  if (found) {
+    unsigned int newtagset = selmon->tagset[selmon->seltags] ^ scratchtag;
+    if (newtagset) {
+      selmon->tagset[selmon->seltags] = newtagset;
+      focus(NULL);
+      arrange(selmon);
+    }
+    if (ISVISIBLE(c)) {
+      focus(c);
+      restack(selmon);
+    }
+  } else
+    spawn(arg);
 }
 
-void
-setcfact(const Arg *arg) {
-	float f;
-	Client *c;
-
-	c = selmon->sel;
-
-	if(!arg || !c || !selmon->lt[selmon->sellt]->arrange)
-		return;
-	f = arg->f + c->cfact;
-	if(arg->f == 0.0)
-		f = 1.0;
-	else if(f < 0.25 || f > 4.0)
-		return;
-	c->cfact = f;
-	arrange(selmon);
+void setcfact(const Arg *arg) {
+  float f;
+  Client *c;
+  
+  c = selmon->sel;
+  
+  if(!arg || !c || !selmon->lt[selmon->sellt]->arrange)
+    return;
+  f = arg->f + c->cfact;
+  if(arg->f == 0.0)
+    f = 1.0;
+  else if(f < 0.25 || f > 4.0)
+    return;
+  c->cfact = f;
+  arrange(selmon);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -2088,7 +2077,7 @@ void setup(void) {
   sh = DisplayHeight(dpy, screen);
   root = RootWindow(dpy, screen);
   xinitvisual();
-	drw = drw_create(dpy, screen, root, sw, sh, visual, depth, cmap);
+  drw = drw_create(dpy, screen, root, sw, sh, visual, depth, cmap);
   if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
     die("no fonts could be loaded.");
   lrpad = drw->fonts->h;
@@ -2118,8 +2107,9 @@ void setup(void) {
   /* init appearance */
   scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
   unsigned int alphas[] = {borderalpha, baralpha, OPAQUE};
-  for (i = 0; i < LENGTH(colors); i++)
-		scheme[i] = drw_scm_create(drw, colors[i], alphas, 3);
+  for (i = 0; i < LENGTH(colors); i++) {
+    scheme[i] = drw_scm_create(drw, colors[i], alphas, 3);
+  }
   /* init bars */
   updatebars();
   updatestatus();
@@ -2217,7 +2207,7 @@ void sigstatusbar(const Arg *arg) {
   sigqueue(statuspid, SIGRTMIN + statussig, sv);
 }
 
-sighup(int unused) {
+void sighup(int unused) {
   Arg a = {.i = 1};
   quit(&a);
 }
@@ -2274,38 +2264,38 @@ void togglebar(const Arg *arg) {
 }
 
 void togglefloating(const Arg *arg) {
-	Client *c;
-	int existed = 0;
-	int x = selmon->wx + selmon->ww / 6,
-	y = selmon->wy + selmon->wh / 6,
-	w = selmon->ww / 3 * 2,
-	h = selmon->wh / 3 * 2;
-
-	if (!selmon->sel)
-		return;
-	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
-		return;
-	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-
-	// 打开浮动窗口时分配一个位置时窗口不重叠
-	if (!(arg && arg->ui == 1)) {
-		if (selmon->sel->isfloating) {
-			for (c=selmon->clients; c; c = c->next) {
-				if (ISVISIBLE(c) && !HIDDEN(c) && c->x == x && c->y == y) {
-					existed = 1;
-					break;
-				}
-			}
-			if (existed) {
-				int d1 = 0, d2 = 0;
-				while (d1 == 0) d1 = rand()%5 - 2;
-				while (d2 == 0) d2 = rand()%5 - 2;
-				resize(selmon->sel, x + (selmon->ww / 20) * d1, y + selmon->wh / 20 * d2, w, h, 0);
-			} else
-				resize(selmon->sel, x, y, w, h, 0);
-		}
-	}
-	arrange(selmon);
+  Client *c;
+  int existed = 0;
+  int x = selmon->wx + selmon->ww / 6,
+  y = selmon->wy + selmon->wh / 6,
+  w = selmon->ww / 3 * 2,
+  h = selmon->wh / 3 * 2;
+  
+  if (!selmon->sel)
+    return;
+  if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
+    return;
+  selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
+  
+  // 打开浮动窗口时分配一个位置时窗口不重叠
+  if (!(arg && arg->ui == 1)) {
+    if (selmon->sel->isfloating) {
+      for (c=selmon->clients; c; c = c->next) {
+        if (ISVISIBLE(c) && !HIDDEN(c) && c->x == x && c->y == y) {
+          existed = 1;
+          break;
+        }
+      }
+      if (existed) {
+        int d1 = 0, d2 = 0;
+        while (d1 == 0) d1 = rand()%5 - 2;
+        while (d2 == 0) d2 = rand()%5 - 2;
+        resize(selmon->sel, x + (selmon->ww / 20) * d1, y + selmon->wh / 20 * d2, w, h, 0);
+      } else
+        resize(selmon->sel, x, y, w, h, 0);
+    }
+  }
+  arrange(selmon);
 }
 
 void toggletag(const Arg *arg) {
@@ -2432,9 +2422,9 @@ void updatebars(void) {
   for (m = mons; m; m = m->next) {
     if (m->barwin)
       continue;
-		m->barwin = XCreateWindow(dpy, root, m->wx, m->by, m->ww, bh, 0, depth,
-		                          InputOutput, visual,
-		                          CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWColormap|CWEventMask, &wa);
+    m->barwin = XCreateWindow(dpy, root, m->wx, m->by, m->ww, bh, 0, depth,
+          InputOutput, visual,
+          CWOverrideRedirect|CWBackPixel|CWBorderPixel|CWColormap|CWEventMask, &wa);
     XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
     XMapRaised(dpy, m->barwin);
     XSetClassHint(dpy, m->barwin, &ch);
@@ -2747,41 +2737,39 @@ int xerrorstart(Display *dpy, XErrorEvent *ee) {
   return -1;
 }
 
-void
-xinitvisual()
-{
-	XVisualInfo *infos;
-	XRenderPictFormat *fmt;
-	int nitems;
-	int i;
-
-	XVisualInfo tpl = {
-		.screen = screen,
-		.depth = 32,
-		.class = TrueColor
-	};
-	long masks = VisualScreenMask | VisualDepthMask | VisualClassMask;
-
-	infos = XGetVisualInfo(dpy, masks, &tpl, &nitems);
-	visual = NULL;
-	for(i = 0; i < nitems; i ++) {
-		fmt = XRenderFindVisualFormat(dpy, infos[i].visual);
-		if (fmt->type == PictTypeDirect && fmt->direct.alphaMask) {
-			visual = infos[i].visual;
-			depth = infos[i].depth;
-			cmap = XCreateColormap(dpy, root, visual, AllocNone);
-			useargb = 1;
-			break;
-		}
-	}
-
-	XFree(infos);
-
-	if (! visual) {
-		visual = DefaultVisual(dpy, screen);
-		depth = DefaultDepth(dpy, screen);
-		cmap = DefaultColormap(dpy, screen);
-	}
+void xinitvisual() {
+  XVisualInfo *infos;
+  XRenderPictFormat *fmt;
+  int nitems;
+  int i;
+  
+  XVisualInfo tpl = {
+    .screen = screen,
+    .depth = 32,
+    .class = TrueColor
+  };
+  long masks = VisualScreenMask | VisualDepthMask | VisualClassMask;
+  
+  infos = XGetVisualInfo(dpy, masks, &tpl, &nitems);
+  visual = NULL;
+  for(i = 0; i < nitems; i ++) {
+    fmt = XRenderFindVisualFormat(dpy, infos[i].visual);
+    if (fmt->type == PictTypeDirect && fmt->direct.alphaMask) {
+      visual = infos[i].visual;
+      depth = infos[i].depth;
+      cmap = XCreateColormap(dpy, root, visual, AllocNone);
+      useargb = 1;
+      break;
+    }
+  }
+  
+  XFree(infos);
+  
+  if (! visual) {
+    visual = DefaultVisual(dpy, screen);
+    depth = DefaultDepth(dpy, screen);
+    cmap = DefaultColormap(dpy, screen);
+  }
 }
 
 void zoom(const Arg *arg) {
