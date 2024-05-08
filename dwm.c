@@ -303,13 +303,13 @@ static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void xinitvisual();
 static void zoom(const Arg *arg);
+static void initdatahome();
 
 /* variables */
 static const char autostartblocksh[] = "autostart_blocking.sh";
 static const char autostartsh[] = "autostart.sh";
 static const char broken[] = "broken";
-static const char dwmdir[] = "dwm";
-static const char localshare[] = ".local/share";
+static const char dwmdir[] = "sde/scripts/dwm";
 static char stext[256];
 static int statusw;
 static int statussig;
@@ -667,13 +667,11 @@ void clientmessage(XEvent *e) {
       seturgent(c, 1);
     // 若不是当前显示器 则跳转到对应显示器
     if (c->mon != selmon) {
-      Arg arg = {.i = +1};
-      focusmon(&arg);
+      focusmon(&(Arg) { .i = +1 });
     }
     // 若不适当前tag 则跳转到对应tag
     if (!ISVISIBLE(c)) {
-      Arg arg = {.ui = c->tags};
-      view(&arg);
+      view(&(Arg) { .ui = c->tags });
       focus(c);
     }
   }
@@ -696,6 +694,41 @@ void configure(Client *c) {
   XSendEvent(dpy, c->win, False, StructureNotifyMask, (XEvent *)&ce);
 }
 
+void initdatahome() {
+  // 存在配置直接退出
+  if (datahome != NULL) return;
+
+  char *xdgdatahome;
+  char *home;
+  char *localshare = ".local/share";
+  struct stat sb;
+
+  if ((home = getenv("HOME")) == NULL) return;
+
+  xdgdatahome = getenv("XDG_DATA_HOME");
+  if (xdgdatahome != NULL && *xdgdatahome != '\0') {
+    datahome = ecalloc(1, strlen(xdgdatahome) + 1);
+    if (sprintf(datahome, "%s", xdgdatahome) <= 0) {
+      free(datahome);
+      fprintf(stderr, "dwm data home init error: the XDG_DATA_HOME environment variable is not available\n");
+      return;
+    }
+  } else {
+    datahome = ecalloc(1, strlen(home) + strlen(localshare) + 2);
+    if (sprintf(datahome, "%s/%s", home, localshare) < 0) {
+      free(datahome);
+      fprintf(stderr, "dwm data home init error: the HOME environment variable is not available or %s directory does not exist\n", localshare);
+      return;
+    }
+  }
+
+  if (! (stat(datahome, &sb) == 0 && S_ISDIR(sb.st_mode))) {
+    fprintf(stderr, "dwm data home init error: the %s directory does not exist\n", datahome);
+    return;
+  }
+
+  fprintf(stderr, "datahome init success: %s\n", datahome);
+}
 void configurenotify(XEvent *e) {
   Monitor *m;
   Client *c;
@@ -1930,55 +1963,24 @@ void setlayout(const Arg *arg) {
 void runautostart(void) {
   char *pathpfx;
   char *path;
-  char *xdgdatahome;
-  char *home;
   struct stat sb;
   
-  if ((home = getenv("HOME")) == NULL)
-    /* this is almost impossible */
+  if (datahome == NULL || *datahome == '\0') return;
+
+  /* 拼接dwm数据目录和自启动脚本目录 */
+  pathpfx = ecalloc(1, strlen(datahome) + strlen(dwmdir) + 2);
+  if (sprintf(pathpfx, "%s/%s", datahome, dwmdir) <= 0) {
+    free(pathpfx);
     return;
-  
-  /* if $XDG_DATA_HOME is set and not empty, use $XDG_DATA_HOME/dwm,
-   * otherwise use ~/.local/share/dwm as autostart script directory
-   */
-  xdgdatahome = getenv("XDG_DATA_HOME");
-  if (xdgdatahome != NULL && *xdgdatahome != '\0') {
-    /* space for path segments, separators and nul */
-    pathpfx = ecalloc(1, strlen(xdgdatahome) + strlen(dwmdir) + 2);
-    
-    if (sprintf(pathpfx, "%s/%s", xdgdatahome, dwmdir) <= 0) {
-      free(pathpfx);
-      return;
-    }
-  } else {
-    /* space for path segments, separators and nul */
-    pathpfx = ecalloc(1, strlen(home) + strlen(localshare)
-                         + strlen(dwmdir) + 3);
-  
-  	if (sprintf(pathpfx, "%s/%s/%s", home, localshare, dwmdir) < 0) {
-  	  free(pathpfx);
-  	  return;
-  	}
   }
-  
+
   /* check if the autostart script directory exists */
   if (! (stat(pathpfx, &sb) == 0 && S_ISDIR(sb.st_mode))) {
-    /* the XDG conformant path does not exist or is no directory
-     * so we try ~/.dwm instead
-     */
-    char *pathpfx_new = realloc(pathpfx, strlen(home) + strlen(dwmdir) + 3);
-    if(pathpfx_new == NULL) {
-      free(pathpfx);
-      return;
-    }
-    pathpfx = pathpfx_new;
-    
-    if (sprintf(pathpfx, "%s/.%s", home, dwmdir) <= 0) {
-      free(pathpfx);
-      return;
-    }
+    fprintf(stderr, "dwm autostart script home error: the %s directory does not exist\n", dwmdir);
+    free(pathpfx);
+    return;
   }
-  
+
   /* try the blocking script first */
   path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
   if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0) {
@@ -2233,7 +2235,22 @@ void spawn(const Arg *arg) {
     sa.sa_handler = SIG_DFL;
     sigaction(SIGCHLD, &sa, NULL);
 
-    execvp(((char **)arg->v)[0], (char **)arg->v);
+    const char **cmd = (const char **)arg->v;
+    /* 调用脚本则在脚本前面拼接XDG_DATA_HOME路径 */
+    if (!strcmp(SHEXE, cmd[0]) && !strcmp(SHOPTION, cmd[1])) {
+      char *script_new;
+
+      script_new = ecalloc(1, strlen(datahome) + strlen(cmd[2]) + 2);
+      if (sprintf(script_new, "%s/%s", datahome, cmd[2]) <= 0) {
+        fprintf(stderr, "concat cmd error datahome: %s, script: %s\n", datahome, script_new);
+        return;
+      }
+
+      execvp(((char **)arg->v)[0], (char *[]){ SHEXE, SHOPTION, script_new, NULL });
+      free(script_new);
+    } else {
+      execvp(((char **)arg->v)[0], (char **)arg->v);
+    }
     die("dwm: execvp '%s' failed:", ((char **)arg->v)[0]);
   }
 }
@@ -2797,6 +2814,7 @@ int main(int argc, char *argv[]) {
   if (pledge("stdio rpath proc exec", NULL) == -1)
     die("pledge");
 #endif /* __OpenBSD__ */
+  initdatahome();
   scan();
   runautostart();
   // 重启dwm时将窗口加载到正确的位置

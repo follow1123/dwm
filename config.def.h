@@ -90,6 +90,7 @@ static const Layout layouts[] = {
 
 static const int newclientathead = 0; /* 定义新窗口在栈顶还是栈底 */
 static const char scratchpadname[] = "scratchpad"; /* 便笺名称 */
+static char *datahome = NULL; /* dwm数据存放目录 */
 
 /* key definitions */
 #define MODKEY Mod4Mask
@@ -99,12 +100,15 @@ static const char scratchpadname[] = "scratchpad"; /* 便笺名称 */
 	{ MODKEY|ShiftMask,             KEY, tag,        {.ui = 1 << TAG} }, \
 	{ MODKEY|ControlMask|ShiftMask, KEY, toggletag,  {.ui = 1 << TAG} },
 
+#define SHEXE "/bin/sh"
+#define SHOPTION "-c"
+
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
-#define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
+#define SHCMD(cmd) { .v = (const char*[]){ SHEXE, SHOPTION, cmd, NULL } }
 
 #define STATUSBAR "dwmblocks"
 
-#define SCRIPTS(name) "/home/yf/.local/share/sde/scripts/dwm/"name
+#define SCRIPTS(name) "sde/scripts/dwm/"name
 
 /* dwm重启后复原窗口位置临时文件 */
 #define SESSION_FILE "/tmp/dwm-session"
