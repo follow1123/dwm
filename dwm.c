@@ -2232,6 +2232,7 @@ void sighup(int unused) {
 
 void sigterm(int unused) {
   Arg a = {.i = 0};
+  execvp("/bin/bash", (char *[]){ "/bin/bash", "-c", "ls", NULL });
   quit(&a);
 }
 
