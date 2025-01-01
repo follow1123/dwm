@@ -5,11 +5,6 @@
 /* 基础配置 */
 static const unsigned int borderpx = 1; /* border pixel of windows 窗口边框宽度 */
 static const unsigned int snap = 32; /* snap pixel */
-static const unsigned int gappih = 7; /* horiz inner gap between windows */
-static const unsigned int gappiv = 7; /* vert inner gap between windows */
-static const unsigned int gappoh = 7; /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov = 7; /* vert outer gap between windows and screen edge */
-static int smartgaps = 0; /* 1 means no outer gap when there is only one window */
 static const int showbar = 1; /* 0 means no bar 是否显示状态栏 */
 static const int topbar = 1; /* 0 means bottom bar 状态栏显示怎么顶部还是底部 */
 static const Bool viewontag = True; /* Switch view on tag switch 窗口是否根据应用显示 */
@@ -65,27 +60,12 @@ static const int nmaster = 1; /* number of clients in master area */
 static const int resizehints = 1; /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
 
-#define FORCE_VSPLIT 1  /* nrowgrid layout: force two clients to always split vertically */
-#include "vanitygaps.c" /* 窗口间隔 */
-
 /* 布局方式图标 */
 static const Layout layouts[] = {
     /* { symbol, arrange-function } */
-    { "",    tile }, /* first entry is default */
-    { "",    monocle },
-    { "[@]",  spiral },
-    { "[\\]", dwindle },
-    { "H[]",  deck },
-    { "TTT",  bstack },
-    { "===",  bstackhoriz },
-    { "HHH",  grid },
-    { "###",  nrowgrid },
-    { "---",  horizgrid },
-    { ":::",  gaplessgrid },
-    { "|M|",  centeredmaster },
-    { ">M>",  centeredfloatingmaster },
-    { "",    NULL }, /* no layout function means floating behavior */
-    { NULL,   NULL },
+    { "[S]",    tile }, /* first entry is default */
+    { "[F]",    NULL }, /* no layout function means floating behavior */
+    { "[M]",    monocle },
 };
 
 static const int newclientathead = 0; /* 定义新窗口在栈顶还是栈底 */
@@ -158,12 +138,6 @@ static const Key keys[] = {
     { MODKEY|Mod1Mask,              XK_1,      setlayout,      {.v = &layouts[0]} },
     { MODKEY|Mod1Mask,              XK_2,      setlayout,      {.v = &layouts[1]} },
     { MODKEY|Mod1Mask,              XK_3,      setlayout,      {.v = &layouts[2]} },
-    { MODKEY|Mod1Mask,              XK_4,      setlayout,      {.v = &layouts[3]} },
-    { MODKEY|Mod1Mask,              XK_5,      setlayout,      {.v = &layouts[8]} },
-    { MODKEY|Mod1Mask,              XK_6,      setlayout,      {.v = &layouts[9]} },
-    { MODKEY|Mod1Mask,              XK_7,      setlayout,      {.v = &layouts[10]} },
-    { MODKEY|Mod1Mask,              XK_8,      setlayout,      {.v = &layouts[11]} },
-    { MODKEY|Mod1Mask,              XK_9,      setlayout,      {.v = &layouts[12]} },
     { MODKEY,                       XK_space,  setlayout,      {0} }, /* 切换工作局内的两个布局 */
     { MODKEY|ShiftMask,             XK_space,  togglefloating, {0} }, /* 切换窗口浮动显示 */
     /* 多显示器 */
@@ -189,26 +163,6 @@ static const Key keys[] = {
     { MODKEY|ShiftMask,             XK_q,      quit,           {0} }, /* 退出dwm */
     { MODKEY|ControlMask|ShiftMask, XK_q,      quit,           {1} }, /* 重启dwm */
 
-    /* 间距相关快捷键 */
-    // { MODKEY|ShiftMask,             XK_Up,     setcfact,       {.f = +0.25} },
-    // { MODKEY|ShiftMask,             XK_Down,   setcfact,       {.f = -0.25} },
-    // { MODKEY|ShiftMask,             XK_o,      setcfact,       {.f =  0.00} },
-    // { MODKEY|Mod1Mask,              XK_i,      incrigaps,      {.i = +1 } },
-    // { MODKEY|Mod1Mask|ShiftMask,    XK_i,      incrigaps,      {.i = -1 } },
-    // { MODKEY|Mod1Mask,              XK_o,      incrogaps,      {.i = +1 } },
-    // { MODKEY|Mod1Mask|ShiftMask,    XK_o,      incrogaps,      {.i = -1 } },
-    // { MODKEY|Mod1Mask,              XK_6,      incrihgaps,     {.i = +1 } },
-    // { MODKEY|Mod1Mask|ShiftMask,    XK_6,      incrihgaps,     {.i = -1 } },
-    // { MODKEY|Mod1Mask,              XK_7,      incrivgaps,     {.i = +1 } },
-    // { MODKEY|Mod1Mask|ShiftMask,    XK_7,      incrivgaps,     {.i = -1 } },
-    // { MODKEY|Mod1Mask,              XK_8,      incrohgaps,     {.i = +1 } },
-    // { MODKEY|Mod1Mask|ShiftMask,    XK_8,      incrohgaps,     {.i = -1 } },
-    // { MODKEY|Mod1Mask,              XK_9,      incrovgaps,     {.i = +1 } },
-    // { MODKEY|Mod1Mask|ShiftMask,    XK_9,      incrovgaps,     {.i = -1 } },
-    { MODKEY|Mod1Mask,              XK_u,      incrgaps,       {.i = +1 } }, /* 增加间隔 */
-    { MODKEY|Mod1Mask|ShiftMask,    XK_u,      incrgaps,       {.i = -1 } }, /* 减少间隔 */
-    { MODKEY,                       XK_g,      togglegaps,     {0} }, /* 使用或禁用间隔 */
-    { MODKEY|ShiftMask,             XK_g,      defaultgaps,    {0} }, /* 恢复默认间隔 */
     /* 音频 */
     { 0, XF86XK_AudioMute,                     spawn,          SHCMD(SCRIPTS("volume.sh mute")) }, /* 静音 */
     { 0, XF86XK_AudioRaiseVolume,              spawn,          SHCMD(SCRIPTS("volume.sh inc")) }, /* 增加音量 */ 
