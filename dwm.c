@@ -268,6 +268,7 @@ static void sigstatusbar(const Arg *arg);
 static void sighup(int unused);
 static void sigterm(int unused);
 static void spawn(const Arg *arg);
+static void scriptspawn(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
@@ -304,7 +305,7 @@ static void initdatahome();
 static const char autostartblocksh[] = "autostart_blocking.sh";
 static const char autostartsh[] = "autostart.sh";
 static const char broken[] = "broken";
-static const char dwmdir[] = "sde/scripts/dwm";
+static char *datahome = NULL; /* dwm数据存放目录 */
 static char stext[256];
 static int statusw;
 static int statussig;
@@ -610,6 +611,7 @@ void cleanup(void) {
   Monitor *m;
   size_t i;
 
+  free(datahome);
   view(&a);
   selmon->lt[selmon->sellt] = &foo;
   for (m = mons; m; m = m->next)
@@ -702,15 +704,15 @@ void initdatahome() {
 
   xdgdatahome = getenv("XDG_DATA_HOME");
   if (xdgdatahome != NULL && *xdgdatahome != '\0') {
-    datahome = ecalloc(1, strlen(xdgdatahome) + 1);
-    if (sprintf(datahome, "%s", xdgdatahome) <= 0) {
+    datahome = ecalloc(1, strlen(xdgdatahome) + strlen(dwmdir) + 2);
+    if (sprintf(datahome, "%s/%s", xdgdatahome, dwmdir) <= 0) {
       free(datahome);
       fprintf(stderr, "dwm data home init error: the XDG_DATA_HOME environment variable is not available\n");
       return;
     }
   } else {
-    datahome = ecalloc(1, strlen(home) + strlen(localshare) + 2);
-    if (sprintf(datahome, "%s/%s", home, localshare) < 0) {
+    datahome = ecalloc(1, strlen(home) + strlen(localshare) + strlen(dwmdir) + 3);
+    if (sprintf(datahome, "%s/%s/%s", home, localshare, dwmdir) < 0) {
       free(datahome);
       fprintf(stderr, "dwm data home init error: the HOME environment variable is not available or %s directory does not exist\n", localshare);
       return;
@@ -956,7 +958,7 @@ void drawbar(Monitor *m) {
         if (!ISVISIBLE(c))
           continue;
         if (m->sel == c)
-          scm = SchemeUnderline;
+          scm = SchemeNorm;
         else if (HIDDEN(c))
           scm = SchemeHid;
         else
@@ -971,7 +973,9 @@ void drawbar(Monitor *m) {
         }
         drw_text(drw, x, 0, tabw, bh, lrpad / 2, c->name, 0);
         if (m->sel == c) {
+          drw_setscheme(drw, scheme[SchemeUnderline]);
           drw_rect(drw, x, bh - 2, tabw, 2, 1, 0);
+          drw_setscheme(drw, scheme[SchemeNorm]);
         }
         x += tabw;
         avaiable_width -= tabw;
@@ -1589,7 +1593,7 @@ void propertynotify(XEvent *e) {
 void saveSession(void) {
   FILE *fw = fopen(SESSION_FILE, "w");
   for (Client *c = selmon->clients; c != NULL; c = c->next) { // get all the clients with their tags and write them to the file
-  	fprintf(fw, "%lu %u\n", c->win, c->tags);
+    fprintf(fw, "%lu %u\n", c->win, c->tags);
   }
   fclose(fw);
 }
@@ -1598,31 +1602,31 @@ void restoreSession(void) {
   // restore session
   FILE *fr = fopen(SESSION_FILE, "r");
   if (!fr)
-  	return;
+    return;
   
   char *str = (char*)malloc(23 * sizeof(char)); // allocate enough space for excepted input from text file
   while (fscanf(fr, "%[^\n] ", str) != EOF) { // read file till the end
-  	long unsigned int winId;
-  	unsigned int tagsForWin;
-  	int check = sscanf(str, "%lu %u", &winId, &tagsForWin); // get data
-  	if (check != 2) // break loop if data wasn't read correctly
-  	  break;
-  	
-  	for (Client *c = selmon->clients; c ; c = c->next) { // add tags to every window by winId
-  	  if (c->win == winId) {
-  	    c->tags = tagsForWin;
-  	    break;
-  	  }
-  	}
+    long unsigned int winId;
+    unsigned int tagsForWin;
+    int check = sscanf(str, "%lu %u", &winId, &tagsForWin); // get data
+    if (check != 2) // break loop if data wasn't read correctly
+      break;
+    
+    for (Client *c = selmon->clients; c ; c = c->next) { // add tags to every window by winId
+      if (c->win == winId) {
+        c->tags = tagsForWin;
+        break;
+      }
+    }
   }
   
   for (Client *c = selmon->clients; c ; c = c->next) { // refocus on windows
-  	focus(c);
-  	restack(c->mon);
+    focus(c);
+    restack(c->mon);
   }
   
   for (Monitor *m = selmon; m; m = m->next) // rearrange all monitors
-  	arrange(m);
+    arrange(m);
   
   free(str);
   fclose(fr);
@@ -1680,7 +1684,7 @@ void quit(const Arg *arg) {
   running = 0;
   // 重启是保存窗口的状态，以免重启后每个窗口都堆在第一个工作区内
   if (restart == 1){
-  	saveSession();
+    saveSession();
     saveTagSession();
   }
 }
@@ -1967,46 +1971,31 @@ void setlayout(const Arg *arg) {
 }
 
 void runautostart(void) {
-  char *pathpfx;
   char *path;
   struct stat sb;
   
-  if (datahome == NULL || *datahome == '\0') return;
-
-  /* 拼接dwm数据目录和自启动脚本目录 */
-  pathpfx = ecalloc(1, strlen(datahome) + strlen(dwmdir) + 2);
-  if (sprintf(pathpfx, "%s/%s", datahome, dwmdir) <= 0) {
-    free(pathpfx);
-    return;
-  }
-
-  /* check if the autostart script directory exists */
-  if (! (stat(pathpfx, &sb) == 0 && S_ISDIR(sb.st_mode))) {
-    fprintf(stderr, "dwm autostart script home error: the %s directory does not exist\n", dwmdir);
-    free(pathpfx);
-    return;
+  if (datahome == NULL || *datahome == '\0') {
+      fprintf(stderr, "data home init error\n");
+      return;
   }
 
   /* try the blocking script first */
-  path = ecalloc(1, strlen(pathpfx) + strlen(autostartblocksh) + 2);
-  if (sprintf(path, "%s/%s", pathpfx, autostartblocksh) <= 0) {
+  path = ecalloc(1, strlen(datahome) + strlen(autostartblocksh) + 2);
+  if (sprintf(path, "%s/%s", datahome, autostartblocksh) <= 0) {
     free(path);
-    free(pathpfx);
   }
   
   if (access(path, X_OK) == 0)
     system(path);
   
   /* now the non-blocking script */
-  if (sprintf(path, "%s/%s", pathpfx, autostartsh) <= 0) {
+  if (sprintf(path, "%s/%s", datahome, autostartsh) <= 0) {
     free(path);
-    free(pathpfx);
   }
   
   if (access(path, X_OK) == 0)
     system(strcat(path, " &"));
   
-  free(pathpfx);
   free(path);
 }
 
@@ -2225,24 +2214,30 @@ void spawn(const Arg *arg) {
     sa.sa_handler = SIG_DFL;
     sigaction(SIGCHLD, &sa, NULL);
 
-    const char **cmd = (const char **)arg->v;
-    /* 调用脚本则在脚本前面拼接XDG_DATA_HOME路径 */
-    if (!strcmp(SHEXE, cmd[0]) && !strcmp(SHOPTION, cmd[1])) {
-      char *script_new;
-
-      script_new = ecalloc(1, strlen(datahome) + strlen(cmd[2]) + 2);
-      if (sprintf(script_new, "%s/%s", datahome, cmd[2]) <= 0) {
-        fprintf(stderr, "concat cmd error datahome: %s, script: %s\n", datahome, script_new);
-        return;
-      }
-
-      execvp(((char **)arg->v)[0], (char *[]){ SHEXE, SHOPTION, script_new, NULL });
-      free(script_new);
-    } else {
-      execvp(((char **)arg->v)[0], (char **)arg->v);
-    }
+    execvp(((char **)arg->v)[0], (char **)arg->v);
     die("dwm: execvp '%s' failed:", ((char **)arg->v)[0]);
   }
+}
+
+/*执行 datahome 下的脚本*/
+void scriptspawn(const Arg *arg) {
+    char *script_name = (char *)arg->v;
+    char *script_path;
+
+    if (script_name == NULL || *script_name == '\0') {
+        fprintf(stderr, "no script name");
+        return;
+    }
+
+    script_path = ecalloc(1, strlen(datahome) + strlen(script_name) + 2);
+    if (sprintf(script_path, "%s/%s", datahome, script_name) <= 0) {
+      free(script_path);
+      fprintf(stderr, "init script path error: datahome: %s, script name: %s", datahome, script_name);
+      return;
+    }
+
+    Arg a = { .v = (const char*[]) { "/bin/sh", "-c", script_path, NULL } };
+    spawn(&a);
 }
 
 void tag(const Arg *arg) {
@@ -2627,6 +2622,8 @@ void updatestatus(void) {
     strcpy(stext, "dwm-" VERSION);
     statusw = TEXTW(stext) - lrpad + 2;
   } else {
+
+      /*fprintf(stderr, "bar status: %s\n", stext);*/
     char *text, *s, ch;
 
     statusw = 0;
